@@ -1,2 +1,0 @@
-prefix=gnn
-feedChannel=791875824323133450
