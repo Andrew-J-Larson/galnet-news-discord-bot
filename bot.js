@@ -588,7 +588,7 @@ client.on('message', msg => {
         // GITHUB REPO
         else if (command === 'githubrepo') {
             console.log(`Executed githubrepo command`);
-            msg.channel.send(`If you're looking to help add more features, or just want to run the bot on your own server check out the github repo: ${MY_WEBSITE_URL}`);
+            msg.channel.send(`If you're looking to help add more features, or just want to run the bot on your own server check out the github repo: ${GITHUB_REPO_URL}`);
         }
 
         // <===== BOT COMMANDS HERE =====> //
