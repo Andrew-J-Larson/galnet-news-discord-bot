@@ -1,5 +1,3 @@
-const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
-
 const config = require('../galnet-news-discord-bot-config.json');
 const fs = require('fs');
 const Discord = require('discord.js');
@@ -11,6 +9,10 @@ const { htmlToText } = require('html-to-text');
 const client = new Discord.Client();
 
 // CONSTANTS
+
+// WEBSITES
+const MY_WEBSITE_URL = 'https://thealiendrew.github.io';
+const DONATE_URL = 'https://paypal.me/AlienDrew';
 
 // STATUS TYPES
 const PLAY = 'PLAYING';
@@ -31,6 +33,7 @@ const SAVE_FILE = './settings.txt';
 
 // BOT CONSTANTS
 
+const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
 const DEFAULT_PREFIX = 'gnn';
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
 const NOT_A_COMMAND = "Sorry, but that's not a command, please look at the help page."
@@ -545,7 +548,7 @@ client.on('message', msg => {
             const embed = new Discord.MessageEmbed()
               .setColor(MAIN_BOT_COLOR)
               .setTitle('Commands:')
-              .setDescription(`**help** - Brings up this help page\n**ping** - Gets the ping time in milliseconds\n**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MON-YYYY\`\n**newest** - Gets the latest post(s)\n**top** - Works like newest, but only grabs the single most recent news post\n**feedinfo** - Shows if the feed is on, and what channel it's set to`)
+              .setDescription(`**help** - Brings up this help page\n**ping** - Gets the ping time in milliseconds\n**website** - Links to the bot creator's, AlienDrew's, website\n**donate** - Links to the paypal donation link for the bot developer\n**githubrepo** - Links to the github repo for which this bot is being maintained under\n**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MON-YYYY\`\n**newest** - Gets the latest post(s)\n**top** - Works like newest, but only grabs the single most recent news post\n**feedinfo** - Shows if the feed is on, and what channel it's set to`)
               .setThumbnail(WINGS_LOGO_ORANGE)
               .setFooter("Ping a mod/admin/owner of the server if there are problems with this bot.");
 
@@ -568,6 +571,24 @@ client.on('message', msg => {
                     msg.edit("Pong! `" + (msg.editedTimestamp - msg.createdTimestamp) + "ms`");
                 })
             })
+        }
+        
+        // WEBSITE
+        else if (command === 'website') {
+            console.log(`Executed website command`);
+            msg.channel.send(`The following link will take you to my website where I link to some of my coding projects: ${MY_WEBSITE_URL}`);
+        }
+        
+        // DONATE
+        else if (command === 'donate') {
+            console.log(`Executed donate command`);
+            msg.channel.send(`If you'd like to support me, you can always donate/tip: ${DONATE_URL}`);
+        }
+        
+        // GITHUB REPO
+        else if (command === 'githubrepo') {
+            console.log(`Executed githubrepo command`);
+            msg.channel.send(`If you're looking to help add more features, or just want to run the bot on your own server check out the github repo: ${MY_WEBSITE_URL}`);
         }
 
         // <===== BOT COMMANDS HERE =====> //
