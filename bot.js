@@ -1,3 +1,5 @@
+const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
+
 const config = require('../galnet-news-discord-bot-config.json');
 const fs = require('fs');
 const Discord = require('discord.js');
@@ -172,6 +174,17 @@ function setPrefix(msg, prefix) {
         } else {
             settings.prefix = prefix;
             saveSettings();
+
+            // need to update the status to use new prefix
+            client.user.setPresence({
+                status: 'available',
+                activity: {
+                    name: `${settings.prefix} help | for commands`,
+                    type: PLAY,
+                    url: GITHUB_REPO_URL
+                }
+            });
+
             msg.channel.send('The prefix has been set to `' + prefix + '`.');
             return true;
         }
@@ -459,13 +472,12 @@ function checkUpdate() {
         // check for file existence before trying to load
         fs.readFile(NEWEST_POST_FILE, 'utf8', function(err, data) {
             if (err) {
-                console.log("Error: Couldn't check for the latest post.");
-                return newPostAvailable;
+                console.log('Feed file will be initialized.');
+            } else {
+                // check first line of file with string of feed
+                let filePostLink = data.toString().replace(/\n$/, '');
+                if (checkPostLink == filePostLink) newPostAvailable = false;
             }
-
-            // check first line of file with string of feed
-            let filePostLink = data.toString().replace(/\n$/, '');
-            if (checkPostLink == filePostLink) newPostAvailable = false;
 
             // if there's still a new post available, save it
             if (newPostAvailable) {
@@ -486,18 +498,21 @@ function checkUpdate() {
 
 // MAIN START
 
-client.on('ready', () => {
-    client.user.setPresence({
-        game: {
-            name: `${settings.prefix} help | for commands`,
-            type: PLAY
-        },
-        status: 'online'
-    });
+client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 
-    // any file loading
+    // load settings in first
     loadSettings();
+
+    // set status after settings are loaded in
+    client.user.setPresence({
+        status: 'available',
+        activity: {
+            name: `${settings.prefix} help | for commands`,
+            type: PLAY,
+            url: GITHUB_REPO_URL
+        }
+    });
 
     // interval checking of the RSS feed to update channel
     checkUpdate();
