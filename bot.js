@@ -41,11 +41,11 @@ const LIGHTER_ORANGE = 0xFF9226;
 const DARKER_ORANGE = 0xF07B05;
 const MAIN_BOT_COLOR = LIGHTER_ORANGE;
 const WINGS_LOGO_ORANGE = 'https://community.elitedangerous.com/sites/EDSITE_COMM/themes/bootstrap/bootstrap_community/css/images/WingsLogo_Orange.png';
-const GNN_RSS_URL = 'http://elitedangerous-website-backend-production.elitedangerous.com/galnet.rss';
-const GNN_JSON_URL = 'https://elitedangerous-website-backend-production.elitedangerous.com/api/galnet?_format=json';
+const GNN_RSS_URL = 'https://cms.elitedangerous.com/galnet.rss';
+const GNN_JSON_URL = 'https://https://cms.elitedangerous.com/api/galnet?_format=json';
 const GNN_ARTICLE_URL_PREFIX = 'https://www.elitedangerous.com/news/galnet/article/';
 const GNN_ARTICLE_IMG_URL_PREFIX = 'https://hosting.zaonce.net/elite-dangerous/galnet/';
-const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is ... 05-07-3301
+const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 
 const TOTAL_SETTINGS = 2;
