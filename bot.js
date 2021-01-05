@@ -318,7 +318,7 @@ function createArticlePost(msg, post, gameDate) {
 }
 
 // gets only the very most recent singular post from galnet news; gameDate forces it to grab article from specific date
-function getGnnNewestPost(msg) {
+function getGnnTopPost(msg) {
     (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
         let allNews = await allNewsJSON.json();
@@ -327,8 +327,6 @@ function getGnnNewestPost(msg) {
 
         // get date from the article
         let gameDate = commandDateFormat(post.date);
-        // convert gameDate to format used in posts
-        checkDate = articleDateFormat(gameDate);
 
         // post new article to channel or feed channel if it was a feed
         createArticlePost(msg, post, gameDate);
@@ -336,8 +334,9 @@ function getGnnNewestPost(msg) {
 }
 
 // gets posts from galnet news; gameDate forces it to grab the article(s) from a specific date
-// if nothing is entered, it'll grab the newest post(s)
-function getGnnPosts(msg, gameDate) {
+// if nothing is entered, it'll grab the newest post(s),
+// [for feed] but if a pub date is entered, it'll skip everything including that node, to show newer posts
+function getGnnPosts(msg, gameDate, postNode) {
     const ALL_POST_DELAY = 1500;
 
     let validNumberDate = false;
@@ -359,12 +358,13 @@ function getGnnPosts(msg, gameDate) {
         let allNews = await allNewsJSON.json();
 
         let post = null;
+        let checkDate = null;
 
         // get requested article from date (depending on date type)
         if (gameDate && validMonthDate) gameDate = commandDateFormat(gameDate.replace(/-/g, ' '));
         else if (!gameDate) gameDate = commandDateFormat(allNews[0].date);
-        // convert gameDate to format used in posts
-        checkDate = articleDateFormat(gameDate);
+        // gameDate needs to convert to format used in posts, when not coming from feed
+        if (!postNode) checkDate = articleDateFormat(gameDate);
 
         // loop through all articles to find oldest with matching date
         const TOTAL_ARTICLES = allNews.length;
@@ -374,21 +374,46 @@ function getGnnPosts(msg, gameDate) {
         while (!matched && i < TOTAL_ARTICLES) {
             post = allNews[i];
             let peekPost = i < (TOTAL_ARTICLES - 1) ? allNews[i + 1] : null;
-            let peekDate = peekPost && (peekPost.date == checkDate);
 
-            if ((post.date != checkDate) && peekDate) j = i + 1;
-            if ((post.date == checkDate) && !peekDate) matched = true;
+            // if we have a gameDate, else a postNode
+            let currDate, peekDate;
+            if (checkDate) {
+                currDate = post.date == checkDate;
+                peekDate = peekPost && (peekPost.date == checkDate);
+                // need to include found node
+                if (!currDate && peekDate) j = i + 1;
+            } else if (postNode) {
+                currDate = post.nid == postNode;
+                peekDate = peekPost && (peekPost.nid == postNode);
+                // need to exclude found node
+                if (!currDate && peekDate) j = i;
+            }
+            if (currDate && !peekDate) matched = true;
+            
             else i++;
         }
 
         // either start posting matching articles or a note about there being none
         if (matched) {
-            // loop and send all articles that matched the date
-            let matchedPseudoIndex = 0;
-            for (let k = i; k >= j; k--) {
-                setTimeout(function() {createArticlePost(msg, allNews[k], gameDate);}, ALL_POST_DELAY * matchedPseudoIndex);
+            let postIndex = 0;
+            
+            // need to either get a chunch of same date posts, or get posts after matched post
+            if (checkDate) {
+                // loop and send all articles that matched the date
+                for (let k = i; k >= j; k--) {
+                    setTimeout(function() {createArticlePost(msg, allNews[k], gameDate);}, ALL_POST_DELAY * postIndex);
 
-                matchedPseudoIndex++;
+                    postIndex++;
+                }
+            } else if (postNode) {
+                // loop and send all articles after the matched date
+                for (let k = j; k >= 0; k--) {
+                    // need this temp date in case we blend into new dates from feed check
+                    let tempDate = commandDateFormat(allNews[k].date);
+                    setTimeout(function() {createArticlePost(msg, allNews[k], tempDate);}, ALL_POST_DELAY * postIndex);
+
+                    postIndex++;
+                }
             }
         } else {
             msg.channel.send('Sorry, no article(s) exist(s) for the date you entered.');
@@ -469,8 +494,10 @@ function checkUpdate() {
         let newPostAvailable = true;
         let feed = await rssParser.parseURL(GNN_RSS_URL);
 
-        checkFirstPost = feed.items[0];
-        checkPostLink = checkFirstPost.link;
+        let theFirstPostLink = feed.items[0].link;
+        let endingSlash = theFirstPostLink.lastIndexOf('/') + 1;
+        let postNodeLinkPrefix = theFirstPostLink.substring(0, endingSlash);
+        let checkPostNode = theFirstPostLink.substring(endingSlash);
 
         // check for file existence before trying to load
         fs.readFile(NEWEST_POST_FILE, 'utf8', function(err, data) {
@@ -478,22 +505,22 @@ function checkUpdate() {
                 console.log('Feed file will be initialized.');
             } else {
                 // check first line of file with string of feed
-                let filePostLink = data.toString().replace(/\n$/, '');
-                if (checkPostLink == filePostLink) newPostAvailable = false;
+                let filePostNode = data.toString().replace(/\n$/, '');
+                if (checkPostNode == filePostNode) newPostAvailable = false;
             }
 
             // if there's still a new post available, save it
             if (newPostAvailable) {
-                console.log(`Found a new post from Galnet News at: ${checkPostLink}`);
+                console.log(`Found a new post from Galnet News at: ${postNodeLinkPrefix}${checkPostNode}`);
 
                 // write to file
-                fs.writeFile(NEWEST_POST_FILE, checkPostLink + '\n', function (err) {
+                fs.writeFile(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
                     if (err) return console.log(err);
                 }); 
 
-                // get post at index 0 from json file
-                getGnnNewestPost(null);
-            } else console.log(`No new post found, latest is still at: ${checkPostLink}`);
+                // get post(s) after the last known post (via node compare) from json file
+                getGnnPosts(null, null, checkPostNode);
+            } else console.log(`No new post found, latest is still at: ${postNodeLinkPrefix}${checkPostNode}`);
             return newPostAvailable;
         });
     })();
@@ -608,7 +635,7 @@ client.on('message', msg => {
         // TOP
         else if (command == 'top') {
             console.log(`Executed top command`);
-            getGnnNewestPost(msg);
+            getGnnTopPost(msg);
         }
         
         // FEED INFO
