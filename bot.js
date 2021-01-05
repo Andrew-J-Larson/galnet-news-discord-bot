@@ -484,7 +484,7 @@ function checkUpdate() {
 
             // if there's still a new post available, save it
             if (newPostAvailable) {
-                console.log('Found a new post from Galnet News.');
+                console.log(`Found a new post from Galnet News at: ${checkPostLink}`);
 
                 // write to file
                 fs.writeFile(NEWEST_POST_FILE, checkPostLink + '\n', function (err) {
@@ -493,7 +493,7 @@ function checkUpdate() {
 
                 // get post at index 0 from json file
                 getGnnNewestPost(null);
-            }
+            } else console.log(`No new post found, latest is still at: ${checkPostLink}`);
             return newPostAvailable;
         });
     })();
