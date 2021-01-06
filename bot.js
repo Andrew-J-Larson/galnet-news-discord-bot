@@ -57,6 +57,18 @@ const REAL_TO_GAME_YEAR_DIFF = 1286;
 // FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
+const HTML_TO_TEXT_OPTIONS = {
+    wordwrap: null,
+    formatters: {
+        'customLineBreaks': function (elem, walk, builder, formatOptions) {
+        builder.openBlock(formatOptions.leadingLineBreaks || 0);
+            builder.closeBlock(formatOptions.trailingLineBreaks || 0);
+        }
+    },
+    tags: { 'br': { format: 'customLineBreaks',
+                    options: { trailingLineBreaks: 2 } },
+            'p': { options: { trailingLineBreaks: 3 } } }
+};
 
 const TOTAL_SETTINGS = 2;
 const SETTINGS_STRINGS = {prefix: 'prefix=',
@@ -212,47 +224,40 @@ function setPrefix(msg, prefix) {
 
 // sends and formats article post to discord, or to the feed channel if msg is null
 function createArticlePost(msg, post) {
-    // parse the HTML for the description
-    const PAGE_BREAK = '<br />';
-    let body = post.body.replace(/<p>|<\/p>|\r?\n|\r/g,'');
-    let firstPageBreak = body.indexOf(PAGE_BREAK);
-    let descSentenceFirst = escapeMarkdown(htmlToText(body.substring(0, firstPageBreak), {wordwrap: null}));
-    let descSentencesMore = escapeMarkdown(htmlToText(body.substring(firstPageBreak + PAGE_BREAK.length), {wordwrap: null}));
+    // get the right and formatted information for title and body
+    let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
+    let body = htmlToText(post.body, HTML_TO_TEXT_OPTIONS).replace(/\r/g,'').trim();
+    let sentences = body.split('\n');
+    // sometimes the title is in the body
+    if (!title) {
+        title = sentences.shift();
+        // remove the newlines before the next sentence
+        while (sentences[0] == '') sentences.shift();
+    }
+    // get the first sentence and separate from others
+    let firstSentence = sentences.shift();
+    let moreSentences = '\n' + sentences.join('\n');
+    // escape discord markdown symbols
+    title = escapeMarkdown(title);
+    firstSentence = escapeMarkdown(firstSentence);
+    moreSentences = escapeMarkdown(moreSentences);
 
     (async () => {
         // include the archive link (nice purpose for cases where articles have same slug article link)
         let postNodeLink = ED_NODE_URL_PREFIX + post.nid;
         let postNodeDataJSON = await fetch(postNodeLink + IN_JSON_FORMAT);
         let postNodeData = await postNodeDataJSON.json();
-        let postGUID = postNodeData.field_galnet_guid[0].value.slice(0, -2); // need to remove langcode from end
+        let postLangCode = postNodeData.langcode[0].value;
+        let postGUID = postNodeData.field_galnet_guid[0].value;
+        // need to remove langcode from end if matched
+        if (postGUID.endsWith(postLangCode)) postGUID = postGUID.slice(0, -(postLangCode.length));
         let postArchiveURL = GNN_ARCHIVE_URL_PREFIX + postGUID
         
-        // need to size differently for posts larger that 2048 characters
-        let description = ('**' + descSentenceFirst + '**\n' + descSentencesMore + '\n**[Archived Post](' + postArchiveURL + ')**').replace(/\n/g, '\n\n');
-        const desc = [];
-        if (description.length > DESCRIPTION_LENGTH) {
-            let newDescription = description.substring(0, DESCRIPTION_LENGTH);
-            let extDescription = description.substring(DESCRIPTION_LENGTH);
-
-            desc.push(newDescription);
-
-            // need to calculate how many fields to use
-            let neededFields = Math.ceil(extDescription.length / FIELD_VALUE_LENGTH);
-            for (let i = 0; i < neededFields; i++) {
-                let atIndex = i*FIELD_VALUE_LENGTH;
-                let lastString = neededFields - 1;
-
-                let newFieldValue = i != lastString ? extDescription.substring(atIndex, atIndex + FIELD_VALUE_LENGTH) : extDescription.substring(atIndex);
-                
-                desc.push(newFieldValue);
-            }
-            
-        } else if (descSentenceFirst.length != '') desc.push(description);
-
+        // start creating the embed
         const embed = new Discord.MessageEmbed()
           .setColor(MAIN_BOT_COLOR)
           .setAuthor(post.date)
-          .setTitle('__' + escapeMarkdown(post.title) + '__')
+          .setTitle('__' + title + '__')
           .setURL(GNN_ARTICLE_URL_PREFIX + post.slug)
           .setFooter(moment(post.date, 'DD MMM YYYY').subtract(REAL_TO_GAME_YEAR_DIFF, 'y').format('LL') + ' UTC');
 
@@ -262,16 +267,41 @@ function createArticlePost(msg, post) {
             embed.attachFiles([GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png']);
             //if (images.length > 1) embed.setImage(GNN_ARTICLE_IMG_URL_PREFIX + images[1] + '.png');
         }
+        
+        // need to size differently for posts larger than 2048 characters
+        let archiveLink = '[Archived Post](' + postArchiveURL + ')';
+        let description = (firstSentence.length > 0) ? ('**' + firstSentence + '**') : '';
+        description += (moreSentences.length > 0) ? moreSentences : '';
+        description += description ? ('\n\n**' + archiveLink + '**') : '';
+        const desc = [];
+        if (description.length > DESCRIPTION_LENGTH) {
+            // need to make sure that the first chunk ends at a double newline
+            let newDescription = description.substring(0, DESCRIPTION_LENGTH + 4);
+            let firstChunkEnd = newDescription.lastIndexOf('\n\n');
+            // fix the newDescription to match requirements, and get the extended description
+            newDescription = description.substring(0, firstChunkEnd);
+            let extDescription = description.substring(firstChunkEnd + 4);
+
+            desc.push(newDescription);
+
+            // need to dynamically create the new fields to overcome description/field string length restrictions
+            while (extDescription.length != 0) {
+                // similar chunking like in normal description
+                let newFieldValue = extDescription.substring(0, FIELD_VALUE_LENGTH + 4);
+                let iterationChunkEnd = newFieldValue.lastIndexOf('\n\n');
+                newFieldValue = extDescription.substring(0, iterationChunkEnd);
+                desc.push(newFieldValue);
+                extDescription = extDescription.substring(iterationChunkEnd, iterationChunkEnd + 4);
+            }
+        } else desc.push(description);
 
         // conditionally set description if there is one
-        if (desc.length >= 1) {
-            embed.setDescription(desc[0])
+        embed.setDescription(desc[0]);
 
-            // for each part of description beyond the character limit, include as fields
-            if (desc.length > 1) {
-                for (let i = 1; i < desc.length; i++) {
-                    embed.addField('\u200B', desc[i]);
-                }
+        // for each part of description beyond the character limit, include as fields
+        if (desc.length > 1) {
+            for (let i = 1; i < desc.length; i++) {
+                embed.addField('\u200B', desc[i]);
             }
         }
 
@@ -294,16 +324,15 @@ function getGnnTopPost(msg) {
     })();
 }
 
-// gets posts from galnet news; gameDate forces it to grab the article(s) from a specific date
+// gets posts from galnet news; gameDate forces it to grab the articles from a specific date
 // if nothing is entered, it'll grab the newest post(s),
 // [for feed] but if a postNode is entered, it'll show new old to new posts starting from and skipping postNode
 function getGnnPosts(msg, gameDate, postNode) {
     const ALL_POST_DELAY = 1500;
 
-    let valid_DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
-        valid_DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
-
-    let gameDateMoment = valid_DD_MM_YYYY || valid_DD_MMM_YYYY;
+    let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
+        DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
+    let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (!gameDateMoment) {
         msg.channel.send('Invalid date entered, please put date in the correct format.');
         return;
@@ -314,7 +343,7 @@ function getGnnPosts(msg, gameDate, postNode) {
         let allNews = await allNewsJSON.json();
         // as long as we don't hage a postNode, we need a date to check against
         let checkDate = !postNode ? (gameDateMoment ? gameDateMoment.format('DD MMM YYYY').toUpperCase()
-                                                    : moment(allNews[0].date, 'DD MMM YYYY'))
+                                                    : allNews[0].date)
                                   : null;
         let post = null;
 
@@ -366,7 +395,7 @@ function getGnnPosts(msg, gameDate, postNode) {
                 }
             }
         } else {
-            msg.channel.send('Sorry, no article(s) exist(s) for the date you entered.');
+            msg.channel.send('Sorry, no articles exist for the date you entered.');
             return;
         }
     })();
