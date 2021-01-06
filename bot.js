@@ -1,4 +1,5 @@
 const config = require('../galnet-news-discord-bot-config.json');
+const { version, author, license } = require('./package.json');
 const fs = require('fs');
 const Discord = require('discord.js');
 const fetch = require('node-fetch');
@@ -11,8 +12,8 @@ const client = new Discord.Client();
 // CONSTANTS
 
 // WEBSITES
-const MY_WEBSITE_URL = 'https://thealiendrew.github.io';
-const DONATE_URL = 'https://paypal.me/AlienDrew';
+const AUTHOR_URL = 'https://thealiendrew.github.io';
+const PAYPAL_URL = 'https://paypal.me/AlienDrew';
 
 // STATUS TYPES
 const PLAY = 'PLAYING';
@@ -33,18 +34,26 @@ const SAVE_FILE = './settings.txt';
 
 // BOT CONSTANTS
 
+const IN_JSON_FORMAT = '?_format=json';
+
 const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
+const BOT_NAME = 'Galnet News';
 const DEFAULT_PREFIX = 'gnn';
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
 const NOT_A_COMMAND = "Sorry, but that's not a command, please look at the help page."
-const LIGHTER_ORANGE = 0xFF9226;
-const DARKER_ORANGE = 0xF07B05;
-const MAIN_BOT_COLOR = LIGHTER_ORANGE;
-const WINGS_LOGO_ORANGE = 'https://community.elitedangerous.com/sites/EDSITE_COMM/themes/bootstrap/bootstrap_community/css/images/WingsLogo_Orange.png';
-const GNN_RSS_URL = 'https://cms.elitedangerous.com/galnet.rss';
-const GNN_JSON_URL = 'https://cms.elitedangerous.com/api/galnet?_format=json';
-const GNN_ARTICLE_URL_PREFIX = 'https://www.elitedangerous.com/news/galnet/article/';
+const MAIN_BOT_COLOR = 0xFF9226; // LIGHTER_ORANGE = 0xFF9226; DARKER_ORANGE = 0xF07B05
+const ED_DOMAIN = 'elitedangerous.com';
+const ED_FRONTEND_URL = 'https://www.' + ED_DOMAIN + '/';
+const ED_BACKEND_URL = 'https://cms.' + ED_DOMAIN + '/';
+const ED_COMMUNITY_URL = 'https://community.' + ED_DOMAIN + '/';
+const ED_NODE_URL_PREFIX = ED_BACKEND_URL + 'node/';
+const GNN_ARTICLE_URL_PREFIX = ED_FRONTEND_URL + 'news/galnet/article/';
 const GNN_ARTICLE_IMG_URL_PREFIX = 'https://hosting.zaonce.net/elite-dangerous/galnet/';
+const GNN_ARCHIVE_URL_PREFIX = ED_COMMUNITY_URL + 'galnet/uid/';
+const GNN_RSS_URL = ED_BACKEND_URL + 'galnet.rss';
+const GNN_JSON_URL = ED_BACKEND_URL + 'api/galnet' + IN_JSON_FORMAT;
+const WINGS_LOGO_ORANGE = ED_COMMUNITY_URL + 'sites/EDSITE_COMM/themes/bootstrap/bootstrap_community/css/images/WingsLogo_Orange.png';
+// FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 
@@ -265,56 +274,66 @@ function createArticlePost(msg, post, gameDate) {
     let descSentence1st = htmlToText(body.substring(0, firstPageBreak), {wordwrap: null});
     let descSentencesAfter = htmlToText(body.substring(firstPageBreak + PAGE_BREAK.length), {wordwrap: null});
 
-    // need to size differently for posts larger that 2048 characters
-    let description = ('**' + descSentence1st + '**\n' + descSentencesAfter).replace(/\n/g, '\n\n');
-    const desc = [];
-    if (description.length > DESCRIPTION_LENGTH) {
-        let newDescription = description.substring(0, DESCRIPTION_LENGTH);
-        let extDescription = description.substring(DESCRIPTION_LENGTH);
-
-        desc.push(newDescription);
-
-        // need to calculate how many fields to use
-        let neededFields = Math.ceil(extDescription.length / FIELD_VALUE_LENGTH);
-        for (let i = 0; i < neededFields; i++) {
-            let atIndex = i*FIELD_VALUE_LENGTH;
-            let lastString = neededFields - 1;
-
-            let newFieldValue = i != lastString ? extDescription.substring(atIndex, atIndex + FIELD_VALUE_LENGTH) : extDescription.substring(atIndex);
-            
-            desc.push(newFieldValue);
-        }
+    (async () => {
+        // include the archive link (nice purpose for cases where articles have same slug article link)
+        let postNodeLink = ED_NODE_URL_PREFIX + post.nid;
+        let postNodeDataJSON = await fetch(postNodeLink + IN_JSON_FORMAT);
+        let postNodeData = await postNodeDataJSON.json();
+        let postGUID = postNodeData.field_galnet_guid[0].value.slice(0, -2); // need to remove langcode from end
+        let postArchiveURL = GNN_ARCHIVE_URL_PREFIX + postGUID
         
-    } else if (descSentence1st.length != '') desc.push(description);
+        // need to size differently for posts larger that 2048 characters
+        let description = ('**' + descSentence1st + '**\n' + descSentencesAfter + '\n**[Archived Post](' + postArchiveURL + ')**').replace(/\n/g, '\n\n');
+        const desc = [];
+        if (description.length > DESCRIPTION_LENGTH) {
+            let newDescription = description.substring(0, DESCRIPTION_LENGTH);
+            let extDescription = description.substring(DESCRIPTION_LENGTH);
 
-    const embed = new Discord.MessageEmbed()
-      .setColor(MAIN_BOT_COLOR)
-      .setTitle(post.title)
-      .setURL(GNN_ARTICLE_URL_PREFIX + post.slug)
-      .setFooter(post.date + ' • ' + getRealDate(gameDate));
+            desc.push(newDescription);
 
-    // conditionally set image if there is one
-    if (post.image && post.image.indexOf(',') != 0) {
-        let images = post.image.replace(/^,+/, '').split(',');
-        embed.attachFiles([GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png']);
-        //if (images.length > 1) embed.setImage(GNN_ARTICLE_IMG_URL_PREFIX + images[1] + '.png');
-    }
+            // need to calculate how many fields to use
+            let neededFields = Math.ceil(extDescription.length / FIELD_VALUE_LENGTH);
+            for (let i = 0; i < neededFields; i++) {
+                let atIndex = i*FIELD_VALUE_LENGTH;
+                let lastString = neededFields - 1;
 
-    // conditionally set description if there is one
-    if (desc.length >= 1) {
-        embed.setDescription(desc[0])
+                let newFieldValue = i != lastString ? extDescription.substring(atIndex, atIndex + FIELD_VALUE_LENGTH) : extDescription.substring(atIndex);
+                
+                desc.push(newFieldValue);
+            }
+            
+        } else if (descSentence1st.length != '') desc.push(description);
 
-        // for each part of description beyond the character limit, include as fields
-        if (desc.length > 1) {
-            for (let i = 1; i < desc.length; i++) {
-                embed.addField('\u200B', desc[i]);
+        const embed = new Discord.MessageEmbed()
+          .setColor(MAIN_BOT_COLOR)
+          .setAuthor(post.date)
+          .setTitle('__' + escapeMarkdown(post.title) + '__')
+          .setURL(GNN_ARTICLE_URL_PREFIX + post.slug)
+          .setFooter(getRealDate(gameDate));
+
+        // conditionally set image if there is one
+        if (post.image && post.image.indexOf(',') != 0) {
+            let images = post.image.replace(/^,+/, '').split(',');
+            embed.attachFiles([GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png']);
+            //if (images.length > 1) embed.setImage(GNN_ARTICLE_IMG_URL_PREFIX + images[1] + '.png');
+        }
+
+        // conditionally set description if there is one
+        if (desc.length >= 1) {
+            embed.setDescription(desc[0])
+
+            // for each part of description beyond the character limit, include as fields
+            if (desc.length > 1) {
+                for (let i = 1; i < desc.length; i++) {
+                    embed.addField('\u200B', desc[i]);
+                }
             }
         }
-    }
 
-    // send to feed channel if not part of msg
-    if (!msg) client.channels.cache.get(settings.feedChannel).send(embed);
-    else msg.channel.send(embed);
+        // send to feed channel if not part of msg
+        if (!msg) client.channels.cache.get(settings.feedChannel).send(embed);
+        else msg.channel.send(embed);
+    })();
 }
 
 // gets only the very most recent singular post from galnet news; gameDate forces it to grab article from specific date
@@ -496,7 +515,6 @@ function checkUpdate() {
 
         let theFirstPostLink = feed.items[0].link;
         let endingSlash = theFirstPostLink.lastIndexOf('/') + 1;
-        let postNodeLinkPrefix = theFirstPostLink.substring(0, endingSlash);
         let checkPostNode = theFirstPostLink.substring(endingSlash);
 
         // check for file existence before trying to load
@@ -511,7 +529,7 @@ function checkUpdate() {
 
             // if there's still a new post available, save it
             if (newPostAvailable) {
-                console.log(`Found a new post from Galnet News at: ${postNodeLinkPrefix}${checkPostNode}`);
+                console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
 
                 // write to file
                 fs.writeFile(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
@@ -520,7 +538,7 @@ function checkUpdate() {
 
                 // get post(s) after the last known post (via node compare) from json file
                 getGnnPosts(null, null, checkPostNode);
-            } else console.log(`No new post found, latest is still at: ${postNodeLinkPrefix}${checkPostNode}`);
+            } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
             return newPostAvailable;
         });
     })();
@@ -574,19 +592,32 @@ client.on('message', msg => {
             console.log(`Executed help command`);
             const embed = new Discord.MessageEmbed()
               .setColor(MAIN_BOT_COLOR)
-              .setTitle('Commands:')
-              .setDescription(`**help** - Brings up this help page\n**ping** - Gets the ping time in milliseconds\n**website** - Links to the bot creator's, AlienDrew's, website\n**donate** - Links to the paypal donation link for the bot developer\n**githubrepo** - Links to the github repo for which this bot is being maintained under\n**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MON-YYYY\`\n**newest** - Gets the latest post(s)\n**top** - Works like newest, but only grabs the single most recent news post\n**feedinfo** - Shows if the feed is on, and what channel it's set to`)
+              .setAuthor(BOT_NAME + ' v' + version)
+              .setTitle('__Commands__')
+              .setDescription(`To run a command: \`${settings.prefix} <command>\`\n\n` +
+                `**help** - Brings up this help page\n` +
+                `**ping** - Gets the ping time in milliseconds\n` +
+                `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MON-YYYY\`\n` +
+                `**newest** - Gets the latest post(s)\n` +
+                `**top** - Works like newest, but only grabs the single most recent news post\n` +
+                `**feedinfo** - Shows if the feed is on, and what channel it's set to`)
               .setThumbnail(WINGS_LOGO_ORANGE)
               .setFooter("Ping a mod/admin/owner of the server if there are problems with this bot.");
 
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
-                embed.addField('Admin Commands:', `**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n**feed** [name / id / mention] - Sets the feed channel or turns it off if on that channel, no arguments uses the current channel\n**prefix** [no-whitespace-string] - Sets the prefix for the bot, no arguments shows the current prefix`);
+                embed.addField('__Admin Commands__',
+                  `**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n` +
+                  `**feed** [name / id / mention] - Sets the feed channel or toggles it off, no arguments uses the channel command was sent in\n` +
+                  `**prefix** [no-whitespace-string] - Sets the prefix for the bot, no arguments shows the current prefix`);
             }
 
             // need this field added last
-            embed.addField(`Prefix is \`${settings.prefix}\``, `For running a command:\n\t\`${settings.prefix} <command>\``);
-
+            embed.addField(`__Bot Information__`,
+              `Creator: **[${author}](${AUTHOR_URL})**\n` +
+              `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
+              `Donate: **[PayPal](${PAYPAL_URL})**`);
+        
             msg.channel.send(embed);
         }
 
@@ -598,24 +629,6 @@ client.on('message', msg => {
                     msg.edit("Pong! `" + (msg.editedTimestamp - msg.createdTimestamp) + "ms`");
                 })
             })
-        }
-        
-        // WEBSITE
-        else if (command === 'website') {
-            console.log(`Executed website command`);
-            msg.channel.send(`The following link will take you to my website where I link to some of my coding projects: ${MY_WEBSITE_URL}`);
-        }
-        
-        // DONATE
-        else if (command === 'donate') {
-            console.log(`Executed donate command`);
-            msg.channel.send(`If you'd like to support me, you can always donate/tip: ${DONATE_URL}`);
-        }
-        
-        // GITHUB REPO
-        else if (command === 'githubrepo') {
-            console.log(`Executed githubrepo command`);
-            msg.channel.send(`If you're looking to help add more features, or just want to run the bot on your own server check out the github repo: ${GITHUB_REPO_URL}`);
         }
 
         // <===== BOT COMMANDS HERE =====> //
