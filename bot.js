@@ -167,7 +167,7 @@ function loadSettings() {
             }
         });
 
-        if (settingsLoaded == Object.keys(SETTINGS_STRINGS).length) console.log('Settings loaded successfully');
+        if (settingsLoaded == Object.keys(settings).length) console.log('Settings loaded successfully');
         else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
         else console.log('No settings found in file to load');
         return settingsLoaded;
