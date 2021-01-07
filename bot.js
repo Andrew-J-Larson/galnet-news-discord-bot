@@ -70,14 +70,12 @@ const HTML_TO_TEXT_OPTIONS = {
             'p': { options: { trailingLineBreaks: 3 } } }
 };
 
-const TOTAL_SETTINGS = 2;
-const SETTINGS_STRINGS = {prefix: 'prefix=',
-                          feedChannel: 'feedChannel='}
 const NEWEST_POST_FILE = './newest-post.txt';
 
 // BOT VARIABLES
 
 let settings = {prefix: DEFAULT_PREFIX,
+                feedServer: null,
                 feedChannel: null};
 
 // FUNCTIONS
@@ -158,16 +156,18 @@ function loadSettings() {
             console.log(index + ' ' + line);
 
             // check and load in settings
-            if (line.startsWith(SETTINGS_STRINGS.prefix)) {
-                settings.prefix = line.substring(SETTINGS_STRINGS.prefix.length);
-                settingsLoaded++;
-            } else if (line.startsWith(SETTINGS_STRINGS.feedChannel)) {
-                settings.feedChannel = line.substring(SETTINGS_STRINGS.feedChannel.length);
-                settingsLoaded++;
+            let keys = Object.keys(settings);
+            for (let i = 0; i < keys.length; i++) {
+                let key = keys[i];
+                let keyStart = key + '=';
+                if (line.startsWith(keyStart)) {
+                    settings[key] = line.substring(keyStart.length)
+                    settingsLoaded++;
+                }
             }
         });
 
-        if (settingsLoaded == TOTAL_SETTINGS) console.log('Settings loaded successfully');
+        if (settingsLoaded == Object.keys(SETTINGS_STRINGS).length) console.log('Settings loaded successfully');
         else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
         else console.log('No settings found in file to load');
         return settingsLoaded;
@@ -177,8 +177,13 @@ function loadSettings() {
 // save all bot settings
 function saveSettings() {
     // create/overwrite existing save file
-    let saveString = SETTINGS_STRINGS.prefix + settings.prefix + '\n' +
-                     SETTINGS_STRINGS.feedChannel + settings.feedChannel + '\n';
+    let saveString = '';
+    let keys = Object.keys(settings);
+    for (let i = 0; i < keys.length; i++) {
+        let key = keys[i];
+        let keyStart = key + '=';
+        if (settings[key]) saveSettings += keyStart + settings[key] + '\n';
+    }
 
     // write to file
     fs.writeFile(SAVE_FILE, saveString, function (err) {
@@ -306,7 +311,7 @@ function createArticlePost(msg, post) {
         }
 
         // send to feed channel if not part of msg
-        if (!msg) client.channels.cache.get(settings.feedChannel).send(embed);
+        if (!msg) client.guilds.cache.get(settings.feedServer).get(settings.feedChannel).send(embed);
         else msg.channel.send(embed);
     })();
 }
@@ -333,7 +338,7 @@ function getGnnPosts(msg, gameDate, postNode) {
     let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
         DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
-    if (!gameDateMoment) {
+    if (gameDate && !gameDateMoment) {
         msg.channel.send('Invalid date entered, please put date in the correct format.');
         return;
     }
@@ -426,6 +431,7 @@ function getAllGnnPosts(msg) {
 // sets the channel for the feed, channel name/mention is optional
 function setFeedChannel(msg, channelArg) {
     let channelId = null;
+    let serverId = msg.guild.id;
 
     // check if the channel name is valid to a channel ID
     if (channelArg) {
@@ -446,9 +452,11 @@ function setFeedChannel(msg, channelArg) {
 
     if (channelId) {
         if (channelId == settings.feedChannel) {
+            settings.feedServer = null;
             settings.feedChannel = null;
             msg.channel.send('The feed is now turned off.');
         } else {
+            settings.feedServer = serverId;
             settings.feedChannel = channelId;
             msg.channel.send('Automatic feed channel changed to ' + msg.guild.channels.cache.get(channelId).toString() + '.');
         }
@@ -466,8 +474,8 @@ function checkUpdate() {
     // check if feedChannel is active
     if (settings.feedChannel) return false;
     // check if we can even access the guild information
-    let guild = message.guild;
-    if (!guild || !guild.avilable) return console.log('The guild is no available.');
+    let server = client.guilds.cache.get(settings.feedServer);
+    if (!server || !server.avilable) return console.log('The server is not available.');
 
     // start checking for new posts
     let rssParser = new RSSParser();
@@ -561,7 +569,7 @@ client.on('message', msg => {
                 `**help** - Brings up this help page\n` +
                 `**ping** - Gets the ping time in milliseconds\n` +
                 `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MMM-YYYY\`\n` +
-                `**newest** - Gets the latest post(s)\n` +
+                `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, and what channel it's set to`)
               .setThumbnail(WINGS_LOGO_ORANGE)
@@ -602,9 +610,9 @@ client.on('message', msg => {
             getGnnPosts(msg, args[0]);
         }
 
-        // NEWEST
-        else if (command === 'newest') {
-            console.log(`Executed newest command`);
+        // NEWEST / LATEST
+        else if (command === 'newest' || command == 'latest') {
+            console.log(`Executed newest/latest command`);
             getGnnPosts(msg);
         }
 
