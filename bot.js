@@ -483,7 +483,7 @@ function checkUpdate() {
     if (settings.feedChannel) return false;
     // check if we can even access the guild information
     let server = client.guilds.cache.get(settings.feedServer);
-    if (!server || !server.avilable) return console.log('The server is not available.');
+    if (!server || !server.available) return console.log('The server is not available.');
 
     // start checking for new posts
     let rssParser = new RSSParser();
