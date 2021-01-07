@@ -269,14 +269,15 @@ function createArticlePost(msg, post) {
         // conditionally set image if there is one
         if (post.image && post.image.indexOf(',') != 0) {
             let images = post.image.replace(/^,+/, '').split(',');
+            let imageToCheck = GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png';
             // only set the image if the file is online and working
             let imageExists = true;
-            await fetch("/charge/pay").then((response) => {
+            await fetch(imageToCheck).then((response) => {
                 if (response.status >= 400 && response.status < 600) {
                   imageExists = false;
                 }
             })
-            if (imageExists) embed.attachFiles([GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png']);
+            if (imageExists) embed.attachFiles([imageToCheck]);
             //if (images.length > 1) embed.setImage(GNN_ARTICLE_IMG_URL_PREFIX + images[1] + '.png');
         }
         
