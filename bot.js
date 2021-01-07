@@ -465,7 +465,11 @@ function setFeedChannel(msg, channelArg) {
 function checkUpdate() {
     // check if feedChannel is active
     if (settings.feedChannel) return false;
+    // check if we can even access the guild information
+    let guild = message.guild;
+    if (!guild || !guild.avilable) return console.log('The guild is no available.');
 
+    // start checking for new posts
     let rssParser = new RSSParser();
 
     (async () => {
