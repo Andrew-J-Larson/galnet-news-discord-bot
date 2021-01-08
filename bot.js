@@ -142,14 +142,11 @@ function escapeMarkdown(text) {
 // load all bot settings
 function loadSettings() {
     // check for file existence before trying to load
-    fs.readFile(SAVE_FILE, 'utf8', function(err, data) {
-        let settingsLoaded = false
-
-        if (err) {
-            console.log('No settings file to load');
-            return settingsLoaded;
-        }
-
+    let settingsLoaded = false;
+    let data;
+    try {
+        data = fs.readFileSync(SAVE_FILE, 'utf8');
+        
         // loop through lines until correct setting is found or until end of file
         data.toString().split('\n').forEach(function(line, index, arr) {
             if (index === arr.length - 1 && line === "") return;
@@ -170,8 +167,11 @@ function loadSettings() {
         if (settingsLoaded == Object.keys(settings).length) console.log('Settings loaded successfully');
         else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
         else console.log('No settings found in file to load');
-        return settingsLoaded;
-    });
+    } catch(err) {
+        console.log('No settings file to load');
+    }
+    
+    return settingsLoaded;
 }
 
 // save all bot settings
@@ -186,10 +186,12 @@ function saveSettings() {
     }
 
     // write to file
-    fs.writeFile(SAVE_FILE, saveString, function (err) {
-        if (err) return console.error(err);
+    try {
+        fs.writeFileSync(SAVE_FILE, saveString);
         console.log('Settings saved successfully');
-    });
+    } catch(err) {
+        console.error(err);
+    }
 }
 
 // set the prefix for the bot to use
@@ -319,8 +321,15 @@ function createArticlePost(msg, post) {
         }
 
         // send to feed channel if not part of msg
-        if (!msg) client.guilds.cache.get(settings.feedServer).get(settings.feedChannel).send(embed);
-        else msg.channel.send(embed);
+        if (!msg) {
+            let server = client.guilds.cache.get(settings.feedServer);
+            let channel = server.channels.cache.get(settings.feedChannel);
+            try {
+                channel.send(embed);
+            } catch(err) {
+                console.log(err);
+            }
+        } else msg.channel.send(embed);
     })();
 }
 
@@ -480,13 +489,14 @@ function setFeedChannel(msg, channelArg) {
 // this will check for new post updates
 function checkUpdate() {
     // check if feedChannel is active
-    if (settings.feedChannel) return false;
+    if (!settings.feedChannel) return false;   
+
     // check if we can even access the guild information
     let server = client.guilds.cache.get(settings.feedServer);
     if (!server || !server.available) return console.log('The server is not available.');
 
     // start checking for new posts
-    let rssParser = new RSSParser();
+    let rssParser = new RSSParser(); 
 
     (async () => {
         let newPostAvailable = true;
@@ -497,29 +507,30 @@ function checkUpdate() {
         let checkPostNode = theFirstPostLink.substring(endingSlash);
 
         // check for file existence before trying to load
-        fs.readFile(NEWEST_POST_FILE, 'utf8', function(err, data) {
-            if (err) {
-                console.log('Feed file will be initialized.');
-            } else {
-                // check first line of file with string of feed
-                let filePostNode = data.toString().replace(/\n$/, '');
-                if (checkPostNode == filePostNode) newPostAvailable = false;
-            }
+        let data;
+        try {
+            data = fs.readFileSync(NEWEST_POST_FILE, 'utf8');
+            
+            // check first line of file with string of feed
+            let filePostNode = data.toString().replace(/\n$/, '');
+            if (checkPostNode == filePostNode) newPostAvailable = false;
+        } catch(err) {
+            console.log('Feed file will be initialized.');
+        }
+        // if there's still a new post available, save it
+        if (newPostAvailable) {
+            console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
 
-            // if there's still a new post available, save it
-            if (newPostAvailable) {
-                console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
+            // write to file
+            fs.writeFileSync(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
+                if (err) return console.error(err);
+            }); 
 
-                // write to file
-                fs.writeFile(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
-                    if (err) return console.error(err);
-                }); 
-
-                // get post(s) after the last known post (via node compare) from json file
-                getGnnPosts(null, null, checkPostNode);
-            } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
-            return newPostAvailable;
-        });
+            // get post(s) after the last known post (via node compare) from json file
+            getGnnPosts(null, null, checkPostNode);
+        } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
+        
+        return newPostAvailable;
     })();
 }
 
@@ -540,8 +551,8 @@ client.once('ready', () => {
             url: GITHUB_REPO_URL
         }
     });
-
-    // interval checking of the RSS feed to update channel
+    
+    // start interval checking of the RSS feed to update channel
     checkUpdate();
     setInterval(function() {
         checkUpdate();
