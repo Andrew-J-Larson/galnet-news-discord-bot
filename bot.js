@@ -696,16 +696,16 @@ client.on('message', msg => {
                 `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MMM-YYYY\`\n` +
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
-                `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be pinged`)
+                `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
               .setThumbnail(WINGS_LOGO_ORANGE)
-              .setFooter("Ping a mod/admin/owner of the server if there are problems with this bot.");
+              .setFooter("Mention a mod/admin/owner of the server if there are problems with this bot.");
 
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
                 embed.addField('__Admin Commands__',
                   `**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n` +
                   `**feedchannel** [name / id / mention] - Sets the feed channel or toggles it off, and no arguments uses the channel command was sent in\n` +
-                  `**feedrole** [name (case sensitive) / id / mention] - Sets the role to mention or toggles it off, no arguments turns off the role mention, and mentionable\n` +
+                  `**feedrole** [name (case sensitive) / id / mention] - Sets the role to mention or toggles it off, no arguments turns off the role mention\n` +
                   `**prefix** [no-whitespace-string] - Sets the prefix for the bot, and no arguments shows the current prefix`);
             }
 
