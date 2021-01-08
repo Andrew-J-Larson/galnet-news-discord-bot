@@ -16,7 +16,7 @@ Since this bot was made with [Node.js](https://nodejs.org), you'll need to make 
 }
 ```
 4. Afterwards, you can go back into the git clone and start the bot with `npm start`. \* Not required, but I recommend using [pm2](https://www.npmjs.com/package/pm2) (or another production process manager) for node, as it'll make headless setup a lot easier.
-5. Lastly, you'll need to go back to the developer applications website so you can create the bot invite link. I suggest using the permissions code `523328`, but at this time it only needs permissions for viewing channels, sending messages, embeding links, attaching files, using external emojis, and mentioning `@everyone`/`@here`/all roles. You'll want to make sure to also have the scope set to `bot`.
+5. Lastly, you'll need to go back to the developer applications website so you can create the bot invite link. I suggest using the permissions code `523328`, but at this time it only needs permissions for viewing channels, sending messages, embedding links, attaching files, using external emojis, and mentioning `@everyone`/`@here`/all roles. You'll want to make sure to also have the scope set to `bot`.
 6. Then you can use the link, which should look something like `https://discord.com/api/oauth2/authorize?client_id=[your-client-id]&permissions=523328&scope=bot`, to add it to one server.
 
 ### Appearance
