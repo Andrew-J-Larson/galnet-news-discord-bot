@@ -485,12 +485,18 @@ function getAllGnnPosts(msg) {
 }
 
 // sets the role to mention for the feed, role name/mention is required
-function setFeedRole(msg, roleArg) {
+function setFeedRole(msg, roleArgs) {
     // return if there is no channel set
     if (!settings.feedChannel) {
         msgLocate(msg).send("Sorry, but there's no channel set for the feed to send messages and mention in.");
         return false;
     }
+
+    // need to get actual roleArg
+    let roleArg;
+    if (roleArgs.length > 1) {
+        roleArg = roleArgs.join(' ');
+    } else roleArg = roleArgs[0];
 
     // check if the role is valid to get a role ID
     let roleId = null;
@@ -779,7 +785,7 @@ client.on('message', msg => {
                 return;
             }
             console.log(`Executed feedrole command`);
-            setFeedRole(msg, args[0]);
+            setFeedRole(msg, args);
         }
 
         // PREFIX
