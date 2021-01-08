@@ -23,6 +23,8 @@ const STREAM = 'STREAMING';
 
 // ADMIN PERMISSION
 const ADMIN = 'MANAGE_MESSAGES';
+// OTHER PERMISSIONS
+const SEND = 'SEND_MESSAGES';
 
 // EMBED MAXES
 const DESCRIPTION_LENGTH = 2048;
@@ -324,12 +326,18 @@ function createArticlePost(msg, post) {
         if (!msg) {
             let server = client.guilds.cache.get(settings.feedServer);
             let channel = server.channels.cache.get(settings.feedChannel);
-            try {
-                channel.send(embed);
-            } catch(err) {
-                console.log(err);
-            }
-        } else msg.channel.send(embed);
+            channel.send(embed).catch(err => {
+                console.error(err);
+                return false;
+            });
+        } else {
+            msg.channel.send(embed).catch(err => {
+                console.error(err);
+                return false;
+            });
+        }
+        
+        return true;
     })();
 }
 
@@ -401,24 +409,31 @@ function getGnnPosts(msg, gameDate, postNode) {
             let postIndex = 0;
             
             // need to either get a chunch of same date posts, or get posts after matched post
+            let noErrors = true;
             if (checkDate) {
                 // loop and send all articles that matched the date
                 for (let k = i; k >= j; k--) {
-                    setTimeout(function() {createArticlePost(msg, allNews[k])}, ALL_POST_DELAY * postIndex);
+                    setTimeout(function() {
+                        if (!createArticlePost(msg, allNews[k])) noErrors = false;
+                    }, ALL_POST_DELAY * postIndex);
 
                     postIndex++;
                 }
             } else if (postNode) {
                 // loop and send all articles after the matched date
                 for (let k = j; k >= 0; k--) {
-                    setTimeout(function() {createArticlePost(msg, allNews[k])}, ALL_POST_DELAY * postIndex);
+                    setTimeout(function() {
+                        if (!createArticlePost(msg, allNews[k])) noErrors = false;
+                    }, ALL_POST_DELAY * postIndex);
 
                     postIndex++;
                 }
             }
+            
+            return noErrors;
         } else {
             msg.channel.send('Sorry, no articles exist for the date you entered.');
-            return;
+            return true;
         }
     })();
 }
@@ -447,8 +462,8 @@ function getAllGnnPosts(msg) {
 
 // sets the channel for the feed, channel name/mention is optional
 function setFeedChannel(msg, channelArg) {
-    let channelId = null;
     let serverId = msg.guild.id;
+    let channelId = null;
 
     // check if the channel name is valid to a channel ID
     if (channelArg) {
@@ -472,10 +487,12 @@ function setFeedChannel(msg, channelArg) {
             settings.feedServer = null;
             settings.feedChannel = null;
             msg.channel.send('The feed is now turned off.');
-        } else {
+        } else if (msg.guild.channels.cache.get(channelId).permissionsFor(msg.guild.me).has(SEND)) {
             settings.feedServer = serverId;
             settings.feedChannel = channelId;
             msg.channel.send('Automatic feed channel changed to ' + msg.guild.channels.cache.get(channelId).toString() + '.');
+        } else {
+            msg.channel.send("Sorry, but I don't have the permission to send messages there.");
         }
 
         saveSettings();
@@ -521,13 +538,13 @@ function checkUpdate() {
         if (newPostAvailable) {
             console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
 
-            // write to file
-            fs.writeFileSync(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
-                if (err) return console.error(err);
-            }); 
-
             // get post(s) after the last known post (via node compare) from json file
-            getGnnPosts(null, null, checkPostNode);
+            if (getGnnPosts(null, null, checkPostNode)) {
+                // write to file
+                fs.writeFileSync(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
+                    if (err) return console.error(err);
+                });
+            }
         } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
         
         return newPostAvailable;
