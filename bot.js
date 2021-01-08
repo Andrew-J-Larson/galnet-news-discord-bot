@@ -25,6 +25,7 @@ const STREAM = 'STREAMING';
 const ADMIN = 'MANAGE_MESSAGES';
 // OTHER PERMISSIONS
 const SEND = 'SEND_MESSAGES';
+const EVERYONE = 'MENTION_EVERYONE';
 
 // EMBED MAXES
 const DESCRIPTION_LENGTH = 2048;
@@ -79,7 +80,8 @@ const NEWEST_POST_FILE = './newest-post.txt';
 
 let settings = {prefix: DEFAULT_PREFIX,
                 feedServer: null,
-                feedChannel: null};
+                feedChannel: null,
+                feedRole: null};
 
 // FUNCTIONS
 
@@ -131,6 +133,17 @@ function getChannelFromMention(mention) {
     if (mention.startsWith('<#') && mention.endsWith('>')) {
         mention = mention.slice(2, -1);
 
+        return mention;
+    }
+}
+
+// returns the role id from role mention
+function getRoleFromMention(mention) {
+    if (!mention) return false;
+    
+    if (mention.startsWith('<@&') && mention.endsWith('>')) {
+        mention = mention.slice(3, -1);
+        
         return mention;
     }
 }
@@ -197,6 +210,15 @@ function saveSettings() {
     }
 }
 
+// returns channel or author based on if it can send a message in current channel
+function msgLocate(msg) {
+    if (msg.channel.permissionsFor(msg.guild.me).has(SEND)) return msg.channel;
+    else {
+        msg.author.send("I don't have permissions to send messages from the channel which you sent the command!");
+        return msg.author;
+    };
+}
+
 // set the prefix for the bot to use
 function setPrefix(msg, prefix) {
     // either set or show the prefix
@@ -204,7 +226,7 @@ function setPrefix(msg, prefix) {
         // don't save when it's not needed
         prefix = prefix.toLowerCase();
         if (prefix == settings.prefix) {
-            msg.channel.send('The bot already has the prefix `' + prefix + '`.');
+            msgLocate(msg).send('The bot already has the prefix `' + prefix + '`.');
             return false;
         } else {
             settings.prefix = prefix;
@@ -220,11 +242,11 @@ function setPrefix(msg, prefix) {
                 }
             });
 
-            msg.channel.send('The prefix has been set to `' + prefix + '`.');
+            msgLocate(msg).send('The prefix has been set to `' + prefix + '`.');
             return true;
         }
     } else {
-        msg.channel.send('The current prefix is `' + settings.prefix + '`.');
+        msgLocate(msg).send('The current prefix is `' + settings.prefix + '`.');
         return false;
     }
 
@@ -234,6 +256,7 @@ function setPrefix(msg, prefix) {
 
 // sends and formats article post to discord, or to the feed channel if msg is null
 function createArticlePost(msg, post) {
+    let server = client.guilds.cache.get(settings.feedServer);
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
     let body = htmlToText(post.body, HTML_TO_TEXT_OPTIONS).replace(/\r/g,'').trim();
@@ -287,8 +310,13 @@ function createArticlePost(msg, post) {
         }
         
         // need to size differently for posts larger than 2048 characters
+        let mentionRole = settings.feedRole ? server.roles.cache.get(settings.feedRole).toString() : null;
         let archiveLink = '[Archived Post](' + postArchiveURL + ')';
         let description = (firstSentence.length > 0) ? ('**' + firstSentence + '**') : '';
+        // optionally included mention role
+        if (mentionRole && description.length > 0) description = [description, mentionRole].join(' ');
+        else if (mentionRole) description = mentionRole;
+        // continue with creating rest of description
         description += (moreSentences.length > 0) ? moreSentences : '';
         description += description ? ('\n\n**' + archiveLink + '**') : '';
         const desc = [];
@@ -325,14 +353,13 @@ function createArticlePost(msg, post) {
 
         // send to feed channel if not part of msg
         if (!msg) {
-            let server = client.guilds.cache.get(settings.feedServer);
             let channel = server.channels.cache.get(settings.feedChannel);
             channel.send(embed).catch(err => {
                 console.error(err);
                 return false;
             });
         } else {
-            msg.channel.send(embed).catch(err => {
+            msgLocate(msg).send(embed).catch(err => {
                 console.error(err);
                 return false;
             });
@@ -363,7 +390,7 @@ function getGnnPosts(msg, gameDate, postNode) {
         DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (gameDate && !gameDateMoment) {
-        msg.channel.send('Invalid date entered, please put date in the correct format.');
+        msgLocate(msg).send('Invalid date entered, please put date in the correct format.');
         return false;
     }
 
@@ -431,7 +458,7 @@ function getGnnPosts(msg, gameDate, postNode) {
             
             return noErrors;
         } else {
-            msg.channel.send('Sorry, no articles exist for the date you entered.');
+            msgLocate(msg).send('Sorry, no articles exist for the date you entered.');
             return true;
         }
     })();
@@ -445,7 +472,7 @@ function getAllGnnPosts(msg) {
 
         const TOTAL_ARTICLES = allNews.length;
         let estimatedTime = getHumanTime(ALL_POST_DELAY * TOTAL_ARTICLES);
-        msg.channel.send(`ATTENTION: Sending ${TOTAL_ARTICLES} news posts will take about ${estimatedTime} to complete`);
+        msgLocate(msg).send(`ATTENTION: Sending ${TOTAL_ARTICLES} news posts will take about ${estimatedTime} to complete`);
 
         let seconds = 0;
         for (let i = TOTAL_ARTICLES - 1; i >= 0; i--) {
@@ -457,19 +484,74 @@ function getAllGnnPosts(msg) {
     })(); 
 }
 
+// sets the role to mention for the feed, role name/mention is required
+function setFeedRole(msg, roleArg) {
+    // return if there is no channel set
+    if (!settings.feedChannel) {
+        msgLocate(msg).send("Sorry, but there's no channel set for the feed to send messages and mention in.");
+        return false;
+    }
+
+    // check if the role is valid to get a role ID
+    let roleId = null;
+    if (roleArg) {
+        checkRoleMention = getRoleFromMention(roleArg);
+
+        if (checkRoleMention) roleId = checkRoleMention;
+        else {
+            // if name has spaces, remove the quotes encasing the argument
+            if (roleArg.length > 3 &&
+                roleArg.startsWith('"') && roleArg.endsWith('"')) roleArg = roleArg.slice(1, -1);
+            // continue checking like normal
+            if (roleArg.length > 1) {
+                // check for name to get role ID
+                roleId = msg.guild.roles.cache.get(role => role.name === roleArg).id;
+
+                // else check to see if we were given an id
+                if (!roleId) roleId = msg.guild.roles.cache.find(role => role.id === roleArg).id;
+            }
+        }
+    } else roleId = settings.feedRole; // where the following if will disable it
+
+    if (roleId) {
+        let roleResult = true;
+        
+        if (roleId == settings.feedRole) {
+            settings.feedRole = null;
+            msgLocate(msg).send('The feed role mention is now turned off.');
+        } else if (!msg.guild.channels.cache.get(settings.feedChannel).permissionsFor(msg.guild.me).has(EVERYONE)
+          && (roleId == msg.guild.roles.cache.everyone.id || roleId == roleId == msg.guild.roles.cache.here.id)) {
+            msgLocate(msg).send("Sorry, but I don't have the permission to mention everyone/here in the currently set channel.");
+            roleResult = false;
+        } else if (msg.guild.roles.cache.get(roleId).mentionable) {
+            settings.feedRole = roleId;
+            msgLocate(msg).send('Automatic feed role mention changed to ' + msg.guild.roles.cache.get(roleId).toString() + '.', {'allowedMentions': { 'users' : []}});
+        } else {
+            msgLocate(msg).send("Sorry, but that role is currently not mentionable.");
+        }
+
+        saveSettings();
+        return roleResult;
+    } else {
+        if (roleArg) msgLocate(msg).send("Sorry, that's either not a real role or it was entered incorrectly.");
+        else msgLocate(msg).send("Sorry, but you need to include the role to be mentioned.");
+        return false;
+    }
+}
+
 // sets the channel for the feed, channel name/mention is optional
 function setFeedChannel(msg, channelArg) {
     let serverId = msg.guild.id;
     let channelId = null;
 
-    // check if the channel name is valid to a channel ID
+    // check if the channel name is valid to get a channel ID
     if (channelArg) {
         checkChannelMention = getChannelFromMention(channelArg);
 
         if (checkChannelMention) channelId = checkChannelMention;
         else if (channelArg.length > 1) {
             // check for one word name to get channel ID
-            channelId = msg.guild.channels.cache.find(channel => channel.name === channelArg).id;
+            channelId = msg.guild.channels.cache.find(channel => channel.name === channelArg.toLowerCase()).id;
 
             // else check to see if we were given an id
             if (!channelId) channelId = msg.guild.channels.cache.find(channel => channel.id === channelArg).id;
@@ -483,19 +565,19 @@ function setFeedChannel(msg, channelArg) {
         if (channelId == settings.feedChannel) {
             settings.feedServer = null;
             settings.feedChannel = null;
-            msg.channel.send('The feed is now turned off.');
+            msgLocate(msg).send('The feed is now turned off.');
         } else if (msg.guild.channels.cache.get(channelId).permissionsFor(msg.guild.me).has(SEND)) {
             settings.feedServer = serverId;
             settings.feedChannel = channelId;
-            msg.channel.send('Automatic feed channel changed to ' + msg.guild.channels.cache.get(channelId).toString() + '.');
+            msgLocate(msg).send('Automatic feed channel changed to ' + msg.guild.channels.cache.get(channelId).toString() + '.');
         } else {
-            msg.channel.send("Sorry, but I don't have the permission to send messages there.");
+            msgLocate(msg).send("Sorry, but I don't have the permission to send messages in that channel.");
         }
 
         saveSettings();
         return true;
     } else {
-        msg.channel.send("Sorry, that's either not a real channel or it was entered incorrectly.");
+        msgLocate(msg).send("Sorry, that's either not a real channel or it was entered incorrectly.");
         return false;
     }
 }
@@ -607,7 +689,7 @@ client.on('message', msg => {
                 `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MMM-YYYY\`\n` +
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
-                `**feedinfo** - Shows if the feed is on, and what channel it's set to`)
+                `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be pinged`)
               .setThumbnail(WINGS_LOGO_ORANGE)
               .setFooter("Ping a mod/admin/owner of the server if there are problems with this bot.");
 
@@ -615,8 +697,9 @@ client.on('message', msg => {
             if (msg.member.hasPermission(ADMIN)) {
                 embed.addField('__Admin Commands__',
                   `**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n` +
-                  `**feed** [name / id / mention] - Sets the feed channel or toggles it off, no arguments uses the channel command was sent in\n` +
-                  `**prefix** [no-whitespace-string] - Sets the prefix for the bot, no arguments shows the current prefix`);
+                  `**feedchannel** [name / id / mention] - Sets the feed channel or toggles it off, and no arguments uses the channel command was sent in\n` +
+                  `**feedrole** [name (case sensitive) / id / mention] - Sets the role to mention or toggles it off, no arguments turns off the role mention, and mentionable\n` +
+                  `**prefix** [no-whitespace-string] - Sets the prefix for the bot, and no arguments shows the current prefix`);
             }
 
             // need this field added last
@@ -625,13 +708,13 @@ client.on('message', msg => {
               `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
               `Donate: **[PayPal](${PAYPAL_URL})**`);
         
-            msg.channel.send(embed);
+            msgLocate(msg).send(embed);
         }
 
         // PING
         else if (command === 'ping') {
             console.log(`Executed ping command`);
-            msg.channel.send("Pinging...").then((msg)=> {
+            msgLocate(msg).send("Pinging...").then((msg)=> {
                 msg.edit("Still pinging...").then((msg)=> {
                     msg.edit("Pong! `" + (msg.editedTimestamp - msg.createdTimestamp) + "ms`");
                 })
@@ -661,7 +744,7 @@ client.on('message', msg => {
         // FEED INFO
         else if (command === 'feedinfo') {
             console.log(`Executed feedinfo command`);
-            msg.channel.send(settings.feedChannel ? 'The feed is currently set to ' + msg.guild.channels.cache.get(settings.feedChannel).toString() + '.' : 'The feed is currently turned off.');
+            msgLocate(msg).send(settings.feedChannel ? 'The feed is currently set to ' + msg.guild.channels.cache.get(settings.feedChannel).toString() + '.' : 'The feed is currently turned off.');
         }
 
         // <===== ADMIN ONLY COMMANDS =====> //
@@ -670,29 +753,40 @@ client.on('message', msg => {
         else if (command === 'all') {
             if (!msg.member.hasPermission(ADMIN)) {
                 console.log(`User doesn't have permission for command`);
-                msg.channel.send(NO_PERMISSION);
+                msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
             console.log(`Executed all command`);
             getAllGnnPosts(msg);
         }
 
-        // FEED
-        else if (command === 'feed') {
+        // FEED CHANNEL
+        else if (command === 'feedchannel') {
             if (!msg.member.hasPermission(ADMIN)) {
                 console.log(`User doesn't have permission for command`);
-                msg.channel.send(NO_PERMISSION);
+                msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
-            console.log(`Executed feed command`);
+            console.log(`Executed feedchannel command`);
             setFeedChannel(msg, args[0]);
+        }
+
+        // FEED ROLE
+        else if (command === 'feedrole') {
+            if (!msg.member.hasPermission(ADMIN)) {
+                console.log(`User doesn't have permission for command`);
+                msgLocate(msg).send(NO_PERMISSION);
+                return;
+            }
+            console.log(`Executed feedrole command`);
+            setFeedRole(msg, args[0]);
         }
 
         // PREFIX
         else if (command === 'prefix') {
             if (!msg.member.hasPermission(ADMIN)) {
                 console.log(`User doesn't have permission for command`);
-                msg.channel.send(NO_PERMISSION);
+                msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
             console.log(`Executed prefix command`);
@@ -704,7 +798,7 @@ client.on('message', msg => {
         // NOT A COMMAND, or NO PERMISSION
         else {
             console.log(`Invalid command entered`);
-            msg.channel.send(NOT_A_COMMAND);
+            msgLocate(msg).send(NOT_A_COMMAND);
         }
     } 
 }); 
