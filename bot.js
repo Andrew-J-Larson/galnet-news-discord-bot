@@ -59,6 +59,7 @@ const REAL_TO_GAME_YEAR_DIFF = 1286;
 // FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
+const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
 const HTML_TO_TEXT_OPTIONS = {
     wordwrap: null,
     formatters: {
@@ -358,17 +359,15 @@ function getGnnTopPost(msg) {
 // if nothing is entered, it'll grab the newest post(s),
 // [for feed] but if a postNode is entered, it'll show new old to new posts starting from and skipping postNode
 function getGnnPosts(msg, gameDate, postNode) {
-    const ALL_POST_DELAY = 1500;
-
     let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
         DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (gameDate && !gameDateMoment) {
         msg.channel.send('Invalid date entered, please put date in the correct format.');
-        return;
+        return false;
     }
 
-    (async () => {
+    return (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
         let allNews = await allNewsJSON.json();
         // as long as we don't hage a postNode, we need a date to check against
@@ -387,21 +386,21 @@ function getGnnPosts(msg, gameDate, postNode) {
             let peekPost = i < (TOTAL_ARTICLES - 1) ? allNews[i + 1] : null;
 
             // if we have a date to check, else find postNode
-            let currDate, peekDate;
             if (checkDate) {
-                currDate = post.date == checkDate;
-                peekDate = peekPost && (peekPost.date == checkDate);
+                let currDate = post.date == checkDate;
+                let peekDate = peekPost && (peekPost.date == checkDate);
                 // need to include found node
                 if (!currDate && peekDate) j = i + 1;
+                if (currDate && !peekDate) matched = true;
+                else i++;
             } else if (postNode) {
-                currDate = post.nid == postNode;
-                peekDate = peekPost && (peekPost.nid == postNode);
+                let currNode = post.nid == postNode;
+                let peekNode = peekPost && (peekPost.nid == postNode);
                 // need to exclude found node
-                if (!currDate && peekDate) j = i;
+                if (!currNode && peekNode) j = i;
+                if (currNode && !peekNode) matched = true;
+                else i++;
             }
-            if (currDate && !peekDate) matched = true;
-            
-            else i++;
         }
 
         // either start posting matching articles or a note about there being none
@@ -440,8 +439,6 @@ function getGnnPosts(msg, gameDate, postNode) {
 
 // gets and posts all articles from galnet news in order from oldest to newest
 function getAllGnnPosts(msg) {
-    const ALL_POST_DELAY = 1500;
-
     (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
         let allNews = await allNewsJSON.json();
@@ -503,8 +500,8 @@ function setFeedChannel(msg, channelArg) {
     }
 }
 
-// this will check for new post updates
-function checkUpdate() {
+// this will check for new posts
+function checkFeed() {
     // check if feedChannel is active
     if (!settings.feedChannel) return false;   
 
@@ -525,11 +522,12 @@ function checkUpdate() {
 
         // check for file existence before trying to load
         let data;
+        let filePostNode;
         try {
             data = fs.readFileSync(NEWEST_POST_FILE, 'utf8');
             
             // check first line of file with string of feed
-            let filePostNode = data.toString().replace(/\n$/, '');
+            filePostNode = data.toString().replace(/\n$/, '');
             if (checkPostNode == filePostNode) newPostAvailable = false;
         } catch(err) {
             console.log('Feed file will be initialized.');
@@ -539,11 +537,13 @@ function checkUpdate() {
             console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
 
             // get post(s) after the last known post (via node compare) from json file
-            if (getGnnPosts(null, null, checkPostNode)) {
+            if (getGnnPosts(null, null, filePostNode)) {
                 // write to file
-                fs.writeFileSync(NEWEST_POST_FILE, checkPostNode + '\n', function (err) {
-                    if (err) return console.error(err);
-                });
+                try {
+                    fs.writeFileSync(NEWEST_POST_FILE, checkPostNode + '\n');
+                } catch(err) {
+                    console.error(err)
+                }
             }
         } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
         
@@ -570,9 +570,9 @@ client.once('ready', () => {
     });
     
     // start interval checking of the RSS feed to update channel
-    checkUpdate();
+    checkFeed();
     setInterval(function() {
-        checkUpdate();
+        checkFeed();
     }, FEED_INTERVAL_SPEED);
     console.log(`Feed checker interval started.`);
 });
