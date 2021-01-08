@@ -12,8 +12,8 @@ Not required, but I recommend using [pm2](https://www.npmjs.com/package/pm2) (or
 
 ### Node.js Libraries Used
 - **[discord.js](https://github.com/discordjs/discord.js)** - A powerful JavaScript library for interacting with the [Discord API](https://discord.com/developers/docs/intro).
+- **[node-fetch](https://github.com/node-fetch/node-fetch)** - A light-weight module that brings the Fetch API to Node.js.
+- **[rss-parser](https://github.com/rbren/rss-parser)** - A lightweight RSS parser, for Node and the browser.
 - **[html-to-text](https://github.com/html-to-text/node-html-to-text)** - An advanced html to text converter.
 - **[moment](https://github.com/moment/moment)** - Parse, validate, manipulate, and display dates in javascript.
 - **[moment-precise-range-plugin](https://github.com/codebox/moment-precise-range)** - A moment.js plugin to display human-readable date/time ranges.
-- **[node-fetch](https://github.com/node-fetch/node-fetch)** - A light-weight module that brings the Fetch API to Node.js.
-- **[rss-parser](https://github.com/rbren/rss-parser)** - A lightweight RSS parser, for Node and the browser.
