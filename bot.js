@@ -571,6 +571,7 @@ function setFeedChannel(msg, channelArg) {
         if (channelId == settings.feedChannel) {
             settings.feedServer = null;
             settings.feedChannel = null;
+            settings.feedRole = null;
             msgLocate(msg).send('The feed is now turned off.');
         } else if (msg.guild.channels.cache.get(channelId).permissionsFor(msg.guild.me).has(SEND)) {
             settings.feedServer = serverId;
@@ -750,7 +751,12 @@ client.on('message', msg => {
         // FEED INFO
         else if (command === 'feedinfo') {
             console.log(`Executed feedinfo command`);
-            msgLocate(msg).send(settings.feedChannel ? 'The feed is currently set to ' + msg.guild.channels.cache.get(settings.feedChannel).toString() + '.' : 'The feed is currently turned off.');
+            msgLocate(msg).send(
+                settings.feedChannel
+                ? ('The feed is currently set to send new posts to '
+                  + msg.guild.channels.cache.get(settings.feedChannel).toString()
+                  + (settings.feedRole ? (', and mention the ' + msg.guild.roles.cache.get(settings.feedRole).toString() + ' role') : '') + '.')
+                : 'The feed is currently turned off.', settings.feedRole ? {'allowedMentions': { 'users' : []}} : null);
         }
 
         // <===== ADMIN ONLY COMMANDS =====> //
