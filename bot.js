@@ -279,7 +279,7 @@ function createArticlePost(msg, post) {
         let postNodeLink = ED_NODE_URL_PREFIX + post.nid;
         let postNodeDataJSON = await fetch(postNodeLink + IN_JSON_FORMAT);
         let postNodeData = await postNodeDataJSON.json();
-        let postLangCode = postNodeData.langcode[0].value;
+        let postLangCode = 'en'; // postNodeData.langcode[0].value; <-- this never changes no matter the lang change of the article
         let postGUID = postNodeData.field_galnet_guid[0].value;
         // need to remove langcode from end if matched
         if (postGUID.endsWith(postLangCode)) postGUID = postGUID.slice(0, -(postLangCode.length));
