@@ -401,9 +401,12 @@ function getGnnTopPost(msg) {
 // gets posts from galnet news; gameDate forces it to grab the articles from a specific date
 // if nothing is entered, it'll grab the newest post(s),
 // [for feed] but if a postNode is entered, it'll show new old to new posts starting from and skipping postNode
-function getGnnPosts(msg, gameDate, postNode) {
-    let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
-        DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
+function getGnnPosts(msg, gameDateArgs, postNode) {
+    // get date from argument(s)
+    let gameDate = (gameDateArgs.length == 3) ? gameDateArgs.join('-') : gameDateArgs[0];
+    // continue testing dates
+    let DD_MM_YYYY = moment(gameDateArgs[0], 'DD-MM-YYYY'),
+        DD_MMM_YYYY = moment(gameDateArgs[0], 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (gameDate && !gameDateMoment) {
         msgLocate(msg).send('Invalid date entered, please put date in the correct format.');
@@ -773,7 +776,7 @@ client.on('message', msg => {
         // DATE
         else if (command === 'date') {
             console.log(`Executed date command`);
-            getGnnPosts(msg, args[0]);
+            getGnnPosts(msg, args);
         }
 
         // NEWEST / LATEST
