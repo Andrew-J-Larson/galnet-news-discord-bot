@@ -736,7 +736,7 @@ client.on('message', msg => {
               .setDescription(`To run a command: \`${settings.prefix} <command>\`\n\n` +
                 `**help** - Brings up this help page\n` +
                 `**ping** - Gets the ping time in milliseconds\n` +
-                `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD-MM-YYYY\` or \`DD-MMM-YYYY\`\n` +
+                `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD MM YYYY\` or \`DD MMM YYYY\`\n` +
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
