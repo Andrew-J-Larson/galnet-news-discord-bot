@@ -304,7 +304,7 @@ function createArticlePost(msg, post) {
         let imageExists = true;
         if (post.image && post.image.indexOf(',') != 0) {
             let images = post.image.replace(/^,+/, '').split(',');
-            let imageToCheck = GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png';
+            imageToCheck = GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png';
             // only set the image if the file is online and working
             await fetch(imageToCheck).then((response) => {
                 if (response.status >= 400 && response.status < 600) {
