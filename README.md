@@ -11,7 +11,7 @@ Since this bot was made with [Node.js](https://nodejs.org), you'll need to make 
 2. Then, before trying to run the bot, you'll need to go into the folder and update the packages by running `npm update`.
 3. Make sure you already have filled out a [new developer application with discord](https://discord.com/developers/applications) so you can retrieve the bot token, to put into config in the next step.
 4. You'll need to go to the directory above the git clone (e.g. `../galnet-news-discord-bot`), and create a file named `galnet-news-discord-bot.config` containing the following, while replacing `[YOUR BOT TOKEN HERE]` with your application's bot token:
-```js
+```json
 {
         "BOT_TOKEN": "[YOUR BOT TOKEN HERE]"
 }
