@@ -5,7 +5,7 @@ A single article will appear in such a format:
 {
     title: "Utopia Invites Superpowers to Galactic Summit",
     body: "<p>Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers.<br /> The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation.<br /> Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels:<br /> “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.”<br /> “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.”<br /> Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.</p> ",
-    nid: "2258",
+    nid: 2258,
     date: "01 JAN 3307",
     image: "NewsImageTouristStation",
     slug: "utopia-invites-superpowers-galactic-summit"
