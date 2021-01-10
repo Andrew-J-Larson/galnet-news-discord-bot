@@ -299,20 +299,20 @@ function createArticlePost(msg, post) {
           .setURL(GNN_ARTICLE_URL_PREFIX + post.slug)
           .setFooter(moment(post.date, 'DD MMM YYYY').subtract(REAL_TO_GAME_YEAR_DIFF, 'y').format('LL') + ' UTC', BOT_FOOTER_IMAGE);
 
-        // conditionally set image if there is one
+        // conditionally set image if there is one, else use a specific image
+        let imageExists = true;
         if (post.image && post.image.indexOf(',') != 0) {
             let images = post.image.replace(/^,+/, '').split(',');
             let imageToCheck = GNN_ARTICLE_IMG_URL_PREFIX + images[0] + '.png';
             // only set the image if the file is online and working
-            let imageExists = true;
             await fetch(imageToCheck).then((response) => {
                 if (response.status >= 400 && response.status < 600) {
                   imageExists = false;
                 }
             });
-            if (imageExists) embed.attachFiles([imageToCheck]);
-            else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
-        }
+        } else imageExists = false;
+        if (imageExists) embed.attachFiles([imageToCheck]);
+        else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
         
         // need to size differently for posts larger than 2048 characters
         let mentionRole = settings.feedRole ? server.roles.cache.get(settings.feedRole).toString() : null;
