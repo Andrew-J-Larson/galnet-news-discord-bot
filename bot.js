@@ -56,7 +56,11 @@ const GNN_ARCHIVE_URL_PREFIX = ED_COMMUNITY_URL + 'galnet/uid/';
 const GNN_RSS_URL = ED_BACKEND_URL + 'galnet.rss';
 const GNN_JSON_URL = ED_BACKEND_URL + 'api/galnet' + IN_JSON_FORMAT;
 const BOT_IMAGES_URL_PREFIX = 'https://raw.githubusercontent.com/TheAlienDrew/galnet-news-discord-bot/main/images/'
-const BOT_THUMBNAIL_URL = BOT_IMAGES_URL_PREFIX + 'Galnet-Logo/Galnet_Orange_w1990_canvas_x2160.png';
+const GNN_IMAGES_URL_PREFIX = BOT_IMAGES_URL_PREFIX + 'Galnet-Logo/';
+const GNN_LOGO_ORANGE_THHUMB = GNN_IMAGES_URL_PREFIX + 'Galnet_Orange_Thumbnail.png';
+const GNN_LOGO_WHITE_BOT_IMAGE = GNN_IMAGES_URL_PREFIX + 'Galnet_White_Bot_Picture.png';
+const BOT_THUMBNAIL_IMAGE = GNN_LOGO_ORANGE_THHUMB;
+const BOT_FOOTER_IMAGE = GNN_LOGO_WHITE_BOT_IMAGE;
 const REAL_TO_GAME_YEAR_DIFF = 1286;
 // FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
@@ -292,7 +296,7 @@ function createArticlePost(msg, post) {
           .setAuthor(post.date)
           .setTitle('__' + title + '__')
           .setURL(GNN_ARTICLE_URL_PREFIX + post.slug)
-          .setFooter(moment(post.date, 'DD MMM YYYY').subtract(REAL_TO_GAME_YEAR_DIFF, 'y').format('LL') + ' UTC');
+          .setFooter(moment(post.date, 'DD MMM YYYY').subtract(REAL_TO_GAME_YEAR_DIFF, 'y').format('LL') + ' UTC', BOT_FOOTER_IMAGE);
 
         // conditionally set image if there is one
         if (post.image && post.image.indexOf(',') != 0) {
@@ -705,8 +709,8 @@ client.on('message', msg => {
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
-              .setThumbnail(BOT_THUMBNAIL_URL)
-              .setFooter("Mention a mod/admin/owner of the server if there are problems with this bot.");
+              .setThumbnail(BOT_THUMBNAIL_IMAGE)
+              .setFooter("Mention a mod/admin/owner of the server if there are problems with this bot.", BOT_FOOTER_IMAGE);
 
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
