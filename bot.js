@@ -55,7 +55,8 @@ const GNN_ARTICLE_IMG_URL_PREFIX = 'https://hosting.zaonce.net/elite-dangerous/g
 const GNN_ARCHIVE_URL_PREFIX = ED_COMMUNITY_URL + 'galnet/uid/';
 const GNN_RSS_URL = ED_BACKEND_URL + 'galnet.rss';
 const GNN_JSON_URL = ED_BACKEND_URL + 'api/galnet' + IN_JSON_FORMAT;
-const WINGS_LOGO_ORANGE = ED_COMMUNITY_URL + 'sites/EDSITE_COMM/themes/bootstrap/bootstrap_community/css/images/WingsLogo_Orange.png';
+const BOT_IMAGES_URL_PREFIX = 'https://raw.githubusercontent.com/TheAlienDrew/galnet-news-discord-bot/main/images/'
+const BOT_THUMBNAIL_URL = BOT_IMAGES_URL_PREFIX + 'Galnet-Logo/Galnet_Orange_w1990_canvas_x2160.png';
 const REAL_TO_GAME_YEAR_DIFF = 1286;
 // FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
@@ -704,7 +705,7 @@ client.on('message', msg => {
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
-              .setThumbnail(WINGS_LOGO_ORANGE)
+              .setThumbnail(BOT_THUMBNAIL_URL)
               .setFooter("Mention a mod/admin/owner of the server if there are problems with this bot.");
 
             // need to conditionally show admin commands            
