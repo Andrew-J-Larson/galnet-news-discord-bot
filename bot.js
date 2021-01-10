@@ -405,8 +405,8 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
     // get date from argument(s)
     let gameDate = (gameDateArgs.length == 3) ? gameDateArgs.join('-') : gameDateArgs[0];
     // continue testing dates
-    let DD_MM_YYYY = moment(gameDateArgs[0], 'DD-MM-YYYY'),
-        DD_MMM_YYYY = moment(gameDateArgs[0], 'DD-MMM-YYYY');
+    let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
+        DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (gameDate && !gameDateMoment) {
         msgLocate(msg).send('Invalid date entered, please put date in the correct format.');
