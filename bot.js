@@ -43,8 +43,6 @@ const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot
 const BOT_NAME = 'Galnet News';
 const DEFAULT_PREFIX = 'gnn';
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
-const NOT_A_COMMAND = "Sorry, but that's not a command, please look at the help page."
-const NO_ARTICLES_EXIST = 'Sorry, but no articles exist for the date you entered.';
 const MAIN_BOT_COLOR = 0xFF9226; // LIGHTER_ORANGE = 0xFF9226; DARKER_ORANGE = 0xF07B05
 const ED_DOMAIN = 'elitedangerous.com';
 const ED_FRONTEND_URL = 'https://www.' + ED_DOMAIN + '/';
@@ -64,6 +62,7 @@ const GNN_ARTICLE_NO_IMAGE = BOT_IMAGES_URL_PREFIX + 'No-Image.png';
 const BOT_THUMBNAIL_IMAGE = GNN_LOGO_ORANGE_THHUMB;
 const BOT_FOOTER_IMAGE = GNN_LOGO_WHITE_BOT_IMAGE;
 const REAL_TO_GAME_YEAR_DIFF = 1286;
+const GAME_START_YEAR = 3300;
 // FIX ME!!!
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
@@ -376,22 +375,26 @@ function createArticlePost(msg, post) {
     })();
 }
 
+// fetches all the posts in order and without being empty
+async function fetchGnnArticles() {
+    let allNewsJSON = await fetch(GNN_JSON_URL);
+    // sadly need to sort all the posts first
+    let allNews = await allNewsJSON.json();
+    allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
+    // then need to remove posts that have no description
+    for (let testBodyIndex = allNews.length - 1; testBodyIndex >= 0; testBodyIndex--) {
+        if (allNews[testBodyIndex].body.trim() == '') allNews.splice(testBodyIndex, 1);
+    }
+    
+    return allNews;
+}
+
 // gets only the very most recent singular post from Galnet News
 function getGnnTopPost(msg) {
     (async () => {
-        let allNewsJSON = await fetch(GNN_JSON_URL);
-        // sadly need to sort all the posts first
-        let allNews = await allNewsJSON.json();
-        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
-
+        let allNews = await fetchGnnArticles();
 
         let post = allNews[0];
-        // must not take a post that has no description
-        let atIndex = 1;
-        while (post.body.trim() == '') {
-            post = allNews[atIndex];
-            atIndex++;
-        }
 
         // post new article to channel or feed channel if it was a feed
         createArticlePost(msg, post);
@@ -403,7 +406,7 @@ function getGnnTopPost(msg) {
 // [for feed] but if a postNode is entered, it'll show new old to new posts starting from and skipping postNode
 function getGnnPosts(msg, gameDateArgs, postNode) {
     // get date from argument(s)
-    let gameDate = (gameDateArgs.length == 3) ? gameDateArgs.join('-') : gameDateArgs[0];
+    let gameDate = gameDateArgs ? (gameDateArgs.length == 3 ? gameDateArgs.join('-') : gameDateArgs[0]) : null;
     // continue testing dates
     let DD_MM_YYYY = moment(gameDate, 'DD-MM-YYYY'),
         DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
@@ -411,17 +414,16 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
     if (gameDate && !gameDateMoment) {
         msgLocate(msg).send('Invalid date entered, please put date in the correct format.');
         return false;
+    } else if (gameDateMoment && gameDateMoment.year() < GAME_START_YEAR) {
+        // fix the year to game years if we are using real years
+        gameDateMoment.add(REAL_TO_GAME_YEAR_DIFF, 'y');
     }
 
     return (async () => {
-        let allNewsJSON = await fetch(GNN_JSON_URL);
-        // sadly need to sort all the posts first
-        let allNews = await allNewsJSON.json();
-        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
+        let allNews = await fetchGnnArticles();
         // as long as we don't hage a postNode, we need a date to check against
         let checkDate = !postNode ? (gameDateMoment ? gameDateMoment.format('DD MMM YYYY').toUpperCase()
-                                                    : allNews[0].date)
-                                  : null;
+                                                    : allNews[0].date) : null;
         let post = null;
 
         // loop through all articles to find oldest with matching date
@@ -484,11 +486,10 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
                     }
                 }
             }
-            
-            if (postIndex == 0) msgLocate(msg).send(NO_ARTICLES_EXIST);
+
             return noErrors;
         } else {
-            msgLocate(msg).send(NO_ARTICLES_EXIST);
+            msgLocate(msg).send('Sorry, but no articles exist for the date you entered.');
             return true;
         }
     })();
@@ -497,10 +498,7 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
 // gets and posts all articles from galnet news in order from oldest to newest
 function getAllGnnPosts(msg) {
     (async () => {
-        let allNewsJSON = await fetch(GNN_JSON_URL);
-        // sadly need to sort all the posts first
-        let allNews = await allNewsJSON.json();
-        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
+        let allNews = await fetchGnnArticles();
 
         const TOTAL_ARTICLES = allNews.length;
         let estimatedTime = getHumanTime(ALL_POST_DELAY * TOTAL_ARTICLES);
@@ -508,13 +506,9 @@ function getAllGnnPosts(msg) {
 
         let seconds = 0;
         for (let i = TOTAL_ARTICLES - 1; i >= 0; i--) {
-            // must not take a post that has no description
-            let post = allNews[i];
-            if (post.body.trim() != '') {
-                setTimeout(function() {createArticlePost(msg, post)}, ALL_POST_DELAY * (seconds + 1));
+            setTimeout(function() {createArticlePost(msg, allNews[i])}, ALL_POST_DELAY * (seconds + 1));
 
-                seconds++;
-            }
+            seconds++;
         }
     })(); 
 }
@@ -736,7 +730,7 @@ client.on('message', msg => {
               .setDescription(`To run a command: \`${settings.prefix} <command>\`\n\n` +
                 `**help** - Brings up this help page\n` +
                 `**ping** - Gets the ping time in milliseconds\n` +
-                `**date [timeline date]** - Gets post(s) from a certain day, but the date format must either be in \`DD MM YYYY\` or \`DD MMM YYYY\`\n` +
+                `**date [\`DD MM YYYY\` or \`DD MMM YYYY\`]** - Gets post(s) from a certain day\n` +
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
@@ -853,7 +847,7 @@ client.on('message', msg => {
         // NOT A COMMAND, or NO PERMISSION
         else {
             console.log(`Invalid command entered`);
-            msgLocate(msg).send(NOT_A_COMMAND);
+            msgLocate(msg).send("Sorry, but that's not a command, please look at the help page.");
         }
     } 
 }); 
