@@ -379,7 +379,9 @@ function createArticlePost(msg, post) {
 function getGnnTopPost(msg) {
     (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
+        // sadly need to sort all the posts first
         let allNews = await allNewsJSON.json();
+        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
 
         let post = allNews[0];
 
@@ -402,7 +404,9 @@ function getGnnPosts(msg, gameDate, postNode) {
 
     return (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
+        // sadly need to sort all the posts first
         let allNews = await allNewsJSON.json();
+        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
         // as long as we don't hage a postNode, we need a date to check against
         let checkDate = !postNode ? (gameDateMoment ? gameDateMoment.format('DD MMM YYYY').toUpperCase()
                                                     : allNews[0].date)
@@ -474,7 +478,9 @@ function getGnnPosts(msg, gameDate, postNode) {
 function getAllGnnPosts(msg) {
     (async () => {
         let allNewsJSON = await fetch(GNN_JSON_URL);
+        // sadly need to sort all the posts first
         let allNews = await allNewsJSON.json();
+        allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
 
         const TOTAL_ARTICLES = allNews.length;
         let estimatedTime = getHumanTime(ALL_POST_DELAY * TOTAL_ARTICLES);
