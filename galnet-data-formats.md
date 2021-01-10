@@ -3,12 +3,12 @@
 A single article will appear in such a format:
 ```json
 {
-    title: "Utopia Invites Superpowers to Galactic Summit",
-    body: "<p>Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers.<br /> The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation.<br /> Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels:<br /> “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.”<br /> “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.”<br /> Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.</p> ",
-    nid: 2258,
-    date: "01 JAN 3307",
-    image: "NewsImageTouristStation",
-    slug: "utopia-invites-superpowers-galactic-summit"
+    "title": "Utopia Invites Superpowers to Galactic Summit",
+    "body": "<p>Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers.<br /> The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation.<br /> Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels:<br /> “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.”<br /> “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.”<br /> Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.</p> ",
+    "nid": 2258,
+    "date": "01 JAN 3307",
+    "image": "NewsImageTouristStation",
+    "slug": "utopia-invites-superpowers-galactic-summit"
 }
 ```
 
@@ -33,53 +33,53 @@ https://cms.elitedangerous.com/node/[nid]?_format=json
 And the data format of those show up as follows:
 ```json
 {
-    nid: [ { value: 2270 } ],
-    uuid: [ { value: "e69f425e-9d2d-46b2-9e98-7ac92ba1391a" } ],
-    vid: [ { value: 3186 } ],
-    langcode: [ { value: "en" } ],
-    type: [ { target_id: "galnet_article",
-              target_type: "node_type",
-              target_uuid: "a9124f17-a175-463a-80fc-1cfc644824f4"
+    "nid": [ { "value": 2270 } ],
+    "uuid": [ { "value": "e69f425e-9d2d-46b2-9e98-7ac92ba1391a" } ],
+    "vid": [ { "value": 3186 } ],
+    "langcode": [ { "value": "en" } ],
+    "type": [ { "target_id": "galnet_article",
+                "target_type": "node_type",
+                "target_uuid": "a9124f17-a175-463a-80fc-1cfc644824f4"
             } ],
-    revision_timestamp: [ { value: "2021-01-01T00:18:05+00:00",
-                            format: "Y-m-d\TH:i:sP"
+    "revision_timestamp": [ { "value": "2021-01-01T00:18:05+00:00",
+                              "format": "Y-m-d\TH:i:sP"
                           } ],
-    revision_uid: [ { target_id: 0,
-                      target_type: "user",
-                      target_uuid: "78c40b48-ddb8-462f-a8b2-35be4f9ffbd4",
-                      url: "user/0"
+    "revision_uid": [ { "target_id": 0,
+                        "target_type": "user",
+                        "target_uuid": "78c40b48-ddb8-462f-a8b2-35be4f9ffbd4",
+                        "url": "user/0"
                     } ],
-    revision_log: [ ],
-    status: [ { value: true } ],
-    uid: [ { target_id: 0,
-             target_type: "user",
-             target_uuid: "78c40b48-ddb8-462f-a8b2-35be4f9ffbd4",
-             url: "/user/0"
+    "revision_log": [ ],
+    "status": [ { "value": true } ],
+    "uid": [ { "target_id": 0,
+               "target_type": "user",
+               "target_uuid": "78c40b48-ddb8-462f-a8b2-35be4f9ffbd4",
+               "url": "/user/0"
            } ],
-    title: [ { value: "Utopia Invites Superpowers to Galactic Summit" } ],
-    created: [ { value: "2021-01-01T00:18:05+00:00",
-                 format: "Y-m-d\TH:i:sP"
+    "title": [ { "value": "Utopia Invites Superpowers to Galactic Summit" } ],
+    "created": [ { "value": "2021-01-01T00:18:05+00:00",
+                   "format": "Y-m-d\TH:i:sP"
                } ],
-    changed: [ { value: "2021-01-01T00:18:05+00:00",
-                 format: "Y-m-d\TH:i:sP"
+    "changed": [ { "value": "2021-01-01T00:18:05+00:00",
+                   "format": "Y-m-d\TH:i:sP"
                } ],
-    promote: [ { value: true } ],
-    sticky: [ { value: false } ],
-    default_langcode: [ { value: true } ],
-    revision_translation_affected: [ { value: true } ],
-    path: [ { alias: null,
-              pid: null,
-              langcode: "en"
+    "promote": [ { "value": true } ],
+    "sticky": [ { "value": false } ],
+    "default_langcode": [ { "value": true } ],
+    "revision_translation_affected": [ { "value": true } ],
+    "path": [ { "alias": null,
+              "pid": null,
+              "langcode": "en"
             } ],
-    body: [ { value: "Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers. The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation. Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels: “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.” “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.” Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.",
-              format: null,
-              processed: "<p>Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers.<br /> The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation.<br /> Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels:<br /> “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.”<br /> “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.”<br /> Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.</p> ",
-              summary: null
+    "body": [ { "value": "Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers. The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation. Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels: “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.” “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.” Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.",
+                "format": null,
+                "processed": "<p>Simguru Pranav Antal, leader of the Utopia commune, has proposed hosting a diplomatic conference for the governments of all three superpowers.<br /> The intention is to provide a neutral location to discuss key issues such as the renewed Thargoid attacks, the Marlinist refugee crisis, and hostilities between the Empire and the Federation.<br /> Details have been sent to the Alliance Assembly, Federal Congress and Imperial Senate. Pranav Antal has also broadcast his invitation across all media channels:<br /> “It is not Utopia’s tradition to become involved with politics, but recent events are of great concern to us all. Interstellar war, terrorism, alien incursion and economic collapse are the new four dark horsemen that threaten humanity’s future.”<br /> “We therefore offer to host a Galactic Summit where the Alliance, Empire and Federation may debate these problems peacefully. My sincere hope is that the heads of state grasp this opportunity to resolve their differences and create solutions that benefit their peoples.”<br /> Utopia is an independent society with a focus on using highly advanced technology to increase quality of life. Should this Galactic Summit take place, it would be the first diplomatic meeting of all three superpower governments.</p> ",
+                "summary": null
             } ],
-    field_galnet_date: [ { value: "01 JAN 3307" } ],
-    field_galnet_guid: [ { value: "5fdce4b7b4ba847e4533d98een" } ],
-    field_galnet_image: [ { value: "NewsImageTouristStation" } ],
-    field_slug: [ { value: "utopia-invites-superpowers-galactic-summit" } ],
+    "field_galnet_date": [ { "value": "01 JAN 3307" } ],
+    "field_galnet_guid": [ { "value": "5fdce4b7b4ba847e4533d98een" } ],
+    "field_galnet_image": [ { "value": "NewsImageTouristStation" } ],
+    "field_slug": [ { "value": "utopia-invites-superpowers-galactic-summit" } ],
 }
 ```
 
