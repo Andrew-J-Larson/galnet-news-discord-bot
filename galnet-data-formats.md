@@ -85,7 +85,7 @@ And the data format of those show up as follows:
 
 Most of this data is useless to us, but there are parities that you can obviously deduce. Using the `field_galnet_guid`, however, we can craft a link to where the archive article will be or already is at.
 
-There is particularly some strangeness around the `field_galnet_guid` value however. Most newest posts will usually end in its actual langcode. All posts with `type[0].target_id` being `galnet_article` will always end in `en`, unless it's a very old article that hasn't been translated. When using the API to search for an article in a different langcode, the `type[0].target_id` comes `galnet_article_international`.
+There is particularly some strangeness around the `field_galnet_guid` value however. Most newest posts will usually end in its actual langcode. All posts with `type[0].target_id` being `galnet_article` will always end in `en`, unless it's a very old article that hasn't been translated. When using the API to search for an article in a different langcode, the `type[0].target_id` becomes `galnet_article_international`.
 
 Anyways, dependant on if the GUID has a langcode appended to the end, you can craft one of the two archive URLs:
 ```
