@@ -300,6 +300,7 @@ function createArticlePost(msg, post) {
           .setFooter(moment(post.date, 'DD MMM YYYY').subtract(REAL_TO_GAME_YEAR_DIFF, 'y').format('LL') + ' UTC', BOT_FOOTER_IMAGE);
 
         // conditionally set image if there is one, else use a specific image
+        let imageToCheck;
         let imageExists = true;
         if (post.image && post.image.indexOf(',') != 0) {
             let images = post.image.replace(/^,+/, '').split(',');
