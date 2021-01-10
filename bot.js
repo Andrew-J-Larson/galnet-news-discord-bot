@@ -44,6 +44,7 @@ const BOT_NAME = 'Galnet News';
 const DEFAULT_PREFIX = 'gnn';
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
 const NOT_A_COMMAND = "Sorry, but that's not a command, please look at the help page."
+const NO_ARTICLES_EXIST = 'Sorry, but no articles exist for the date you entered.';
 const MAIN_BOT_COLOR = 0xFF9226; // LIGHTER_ORANGE = 0xFF9226; DARKER_ORANGE = 0xF07B05
 const ED_DOMAIN = 'elitedangerous.com';
 const ED_FRONTEND_URL = 'https://www.' + ED_DOMAIN + '/';
@@ -383,7 +384,14 @@ function getGnnTopPost(msg) {
         let allNews = await allNewsJSON.json();
         allNews.sort((a, b) => (new Date(b.date)) - (new Date(a.date)));
 
+
         let post = allNews[0];
+        // must not take a post that has no description
+        let atIndex = 1;
+        while (post.body.trim() == '') {
+            post = allNews[atIndex];
+            atIndex++;
+        }
 
         // post new article to channel or feed channel if it was a feed
         createArticlePost(msg, post);
@@ -449,26 +457,35 @@ function getGnnPosts(msg, gameDate, postNode) {
             if (checkDate) {
                 // loop and send all articles that matched the date
                 for (let k = i; k >= j; k--) {
-                    setTimeout(function() {
-                        if (!createArticlePost(msg, allNews[k])) noErrors = false;
-                    }, ALL_POST_DELAY * postIndex);
+                    // must not take a post that has no description
+                    let currentPost = allNews[k];
+                    if (currentPost.body.trim() != '') {
+                        setTimeout(function() {
+                            if (!createArticlePost(msg, currentPost)) noErrors = false;
+                        }, ALL_POST_DELAY * postIndex);
 
-                    postIndex++;
+                        postIndex++;
+                    }
                 }
             } else if (postNode) {
                 // loop and send all articles after the matched date
                 for (let k = j; k >= 0; k--) {
-                    setTimeout(function() {
-                        if (!createArticlePost(msg, allNews[k])) noErrors = false;
-                    }, ALL_POST_DELAY * postIndex);
+                    // must not take a post that has no description
+                    let currentPost = allNews[k];
+                    if (currentPost.body.trim() != '') {
+                        setTimeout(function() {
+                            if (!createArticlePost(msg, currentPost)) noErrors = false;
+                        }, ALL_POST_DELAY * postIndex);
 
-                    postIndex++;
+                        postIndex++;
+                    }
                 }
             }
             
+            if (postIndex == 0) msgLocate(msg).send(NO_ARTICLES_EXIST);
             return noErrors;
         } else {
-            msgLocate(msg).send('Sorry, no articles exist for the date you entered.');
+            msgLocate(msg).send(NO_ARTICLES_EXIST);
             return true;
         }
     })();
@@ -488,10 +505,13 @@ function getAllGnnPosts(msg) {
 
         let seconds = 0;
         for (let i = TOTAL_ARTICLES - 1; i >= 0; i--) {
+            // must not take a post that has no description
             let post = allNews[i];
-            setTimeout(function() {createArticlePost(msg, post)}, ALL_POST_DELAY * (seconds + 1));
+            if (post.body.trim() != '') {
+                setTimeout(function() {createArticlePost(msg, post)}, ALL_POST_DELAY * (seconds + 1));
 
-            seconds++;
+                seconds++;
+            }
         }
     })(); 
 }
