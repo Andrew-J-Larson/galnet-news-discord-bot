@@ -315,7 +315,7 @@ function createArticlePost(msg, post) {
         else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
         
         // need to size differently for posts larger than 2048 characters
-        let mentionRole = settings.feedRole ? server.roles.cache.get(settings.feedRole).toString() : null;
+        let mentionRole = (!msg && settings.feedRole) ? server.roles.cache.get(settings.feedRole).toString() : null;
         let archiveLink = '[Archived Post](' + postArchiveURL + ')';
         let description = (firstSentence.length > 0) ? ('**' + firstSentence + '**') : '';
         // optionally included mention role
