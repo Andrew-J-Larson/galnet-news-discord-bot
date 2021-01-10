@@ -73,7 +73,6 @@ const HTML_TO_TEXT_OPTIONS = {
                     options: { trailingLineBreaks: 2 } },
             'p': { options: { trailingLineBreaks: 3 } } }
 };
-
 const NEWEST_POST_FILE = './newest-post.txt';
 
 // BOT VARIABLES
@@ -572,6 +571,14 @@ function setFeedChannel(msg, channelArg) {
             settings.feedServer = null;
             settings.feedChannel = null;
             settings.feedRole = null;
+            
+            // need to delete the newest post file so turning feed back on won't start from an old post
+            try {
+              fs.unlinkSync(NEWEST_POST_FILE);
+            } catch(err) {
+              console.error(err);
+            }
+            
             msgLocate(msg).send('The feed is now turned off.');
         } else if (msg.guild.channels.cache.get(channelId).permissionsFor(msg.guild.me).has(SEND)) {
             settings.feedServer = serverId;
