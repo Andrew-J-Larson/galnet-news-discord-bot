@@ -59,6 +59,7 @@ const BOT_IMAGES_URL_PREFIX = 'https://raw.githubusercontent.com/TheAlienDrew/ga
 const GNN_IMAGES_URL_PREFIX = BOT_IMAGES_URL_PREFIX + 'Galnet-Logo/';
 const GNN_LOGO_ORANGE_THHUMB = GNN_IMAGES_URL_PREFIX + 'Galnet_Orange_Thumbnail.png';
 const GNN_LOGO_WHITE_BOT_IMAGE = GNN_IMAGES_URL_PREFIX + 'Galnet_White_Bot_Picture.png';
+const GNN_ARTICLE_NO_IMAGE = BOT_IMAGES_URL_PREFIX + 'No-Image.png';
 const BOT_THUMBNAIL_IMAGE = GNN_LOGO_ORANGE_THHUMB;
 const BOT_FOOTER_IMAGE = GNN_LOGO_WHITE_BOT_IMAGE;
 const REAL_TO_GAME_YEAR_DIFF = 1286;
@@ -308,9 +309,9 @@ function createArticlePost(msg, post) {
                 if (response.status >= 400 && response.status < 600) {
                   imageExists = false;
                 }
-            })
+            });
             if (imageExists) embed.attachFiles([imageToCheck]);
-            //if (images.length > 1) embed.setImage(GNN_ARTICLE_IMG_URL_PREFIX + images[1] + '.png');
+            else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
         }
         
         // need to size differently for posts larger than 2048 characters
