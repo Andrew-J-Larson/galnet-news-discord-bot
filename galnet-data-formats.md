@@ -96,4 +96,4 @@ WITHOUT LANGCODE AT END: field_galnet_guid will look like [guid],
 Here's what the URL would look like: https://community.elite-dangerous/galnet/[guid]
 ```
 
-Not taking the langcode into account will cause the url to fail, and visa versa, trying to use a langcode on an article that didn't get translated, will cause the result to be blank.
+NOTE: Not stripping the GUID of the langcode will cause the URL to fail (if it had a langcode at the end). Trying to use a langcode with a link that didn't already have one will end up showing you a blank result. And lastly, if you are trying to access the english version of a new post, you don't need to include the langcode, just make sure that the GUID is stripped of it.
