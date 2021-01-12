@@ -316,12 +316,8 @@ function createArticlePost(msg, post) {
         else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
         
         // need to size differently for posts larger than 2048 characters
-        let mentionRole = (!msg && settings.feedRole) ? server.roles.cache.get(settings.feedRole).toString() : null;
         let archiveLink = '[Archived Post](' + postArchiveURL + ')';
         let description = (firstSentence.length > 0) ? ('**' + firstSentence + '**') : '';
-        // optionally included mention role
-        if (mentionRole && description.length > 0) description = [description, mentionRole].join(' ');
-        else if (mentionRole) description = mentionRole;
         // continue with creating rest of description
         description += (moreSentences.length > 0) ? moreSentences : '';
         description += description ? ('\n\n**' + archiveLink + '**') : '';
@@ -360,10 +356,19 @@ function createArticlePost(msg, post) {
         // send to feed channel if not part of msg
         if (!msg) {
             let channel = server.channels.cache.get(settings.feedChannel);
-            channel.send(embed).catch(err => {
-                console.error(err);
-                return false;
-            });
+            let mentionRole = settings.feedRole ? server.roles.cache.get(settings.feedRole).toString() : null;
+            // optionally included mention role
+            if (mentionRole) {
+                channel.send(mentionRole, embed).catch(err => {
+                    console.error(err);
+                    return false;
+                });
+            } else {
+                channel.send(embed).catch(err => {
+                    console.error(err);
+                    return false;
+                });
+            }
         } else {
             msgLocate(msg).send(embed).catch(err => {
                 console.error(err);
@@ -540,7 +545,7 @@ function setFeedRole(msg, roleArgs) {
             // continue checking like normal
             if (roleArg.length > 1) {
                 // check for name to get role ID
-                roleId = msg.guild.roles.cache.get(role => role.name === roleArg).id;
+                roleId = msg.guild.roles.cache.find(role => role.name === roleArg).id;
 
                 // else check to see if we were given an id
                 if (!roleId) roleId = msg.guild.roles.cache.find(role => role.id === roleArg).id;
