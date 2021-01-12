@@ -67,7 +67,7 @@ const GAME_START_YEAR = 3300;
 const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
-const HTML_TO_TEXT_OPTIONS = {
+const HTML_TO_TEXT_SINGLE_LINEBREAK = {
     wordwrap: null,
     formatters: {
         'customLineBreaks': function (elem, walk, builder, formatOptions) {
@@ -77,7 +77,19 @@ const HTML_TO_TEXT_OPTIONS = {
     },
     tags: { 'br': { format: 'customLineBreaks',
                     options: { trailingLineBreaks: 2 } },
-            'p': { options: { trailingLineBreaks: 3 } } }
+            'p': { options: { trailingLineBreaks: 2 } } }
+};
+const HTML_TO_TEXT_DOUBLE_LINEBREAKS = {
+    wordwrap: null,
+    formatters: {
+        'customLineBreaks': function (elem, walk, builder, formatOptions) {
+        builder.openBlock(formatOptions.leadingLineBreaks || 0);
+            builder.closeBlock(formatOptions.trailingLineBreaks || 0);
+        }
+    },
+    tags: { 'br': { format: 'customLineBreaks',
+                    options: { trailingLineBreaks: 2 } },
+            'p': { options: { trailingLineBreaks: 2 } } }
 };
 const NEWEST_POST_FILE = './newest-post.txt';
 
@@ -264,7 +276,7 @@ function createArticlePost(msg, post) {
     let server = client.guilds.cache.get(settings.feedServer);
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
-    let body = htmlToText(post.body, HTML_TO_TEXT_OPTIONS).replace(/\r/g,'').trim();
+    let body = htmlToText(post.body, HTML_TO_TEXT_DOUBLE_LINEBREAKS).replace(/\r/g,'').trim();
     let sentences = body.split('\n');
     // sometimes the title is in the body
     if (!title) {
