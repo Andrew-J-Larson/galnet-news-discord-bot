@@ -42,6 +42,7 @@ const IN_JSON_FORMAT = '?_format=json';
 const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
 const BOT_NAME = 'Galnet News';
 const DEFAULT_PREFIX = 'gnn';
+const PRESENCE_NAME = `@${BOT_NAME} help`;
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
 const MAIN_BOT_COLOR = 0xFF9226; // LIGHTER_ORANGE = 0xFF9226; DARKER_ORANGE = 0xF07B05
 const ED_DOMAIN = 'elitedangerous.com';
@@ -706,7 +707,7 @@ client.once('ready', () => {
     client.user.setPresence({
         status: 'available',
         activity: {
-            name: `${settings.prefix} help | for commands`,
+            name: PRESENCE_NAME,
             type: PLAY,
             url: GITHUB_REPO_URL
         }
@@ -719,6 +720,25 @@ client.once('ready', () => {
     }, FEED_INTERVAL_SPEED);
     console.log(`Feed checker interval started.`);
 });
+
+// joining a server
+client.on("guildCreate", guild => {
+    console.log(`Joined a new guild: ${guild.name}`);
+
+    // set status after settings are loaded in
+    client.user.setPresence({
+        status: 'available',
+        activity: {
+            name: PRESENCE_NAME,
+            type: PLAY,
+            url: GITHUB_REPO_URL
+        }
+    });
+});
+// removed from a server
+client.on("guildDelete", guild => {
+    console.log(`Left a guild: ${guild.name}`);
+})
 
 // command functions should be in here
 client.on('message', msg => {
