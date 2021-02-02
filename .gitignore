@@ -2,6 +2,9 @@
 settings.txt
 newest-post.txt
 
+# MACOS
+.DS_Store
+
 # Logs
 logs
 *.log
