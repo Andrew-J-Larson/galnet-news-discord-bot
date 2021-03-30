@@ -802,7 +802,7 @@ client.once('ready', () => {
     setInterval(function() {
         checkFeed();
     }, FEED_INTERVAL_SPEED);
-    console.log('\nFeed checker interval started.\n');
+    console.log(`\nFeed checker interval started.\n`);
 });
 
 // joining a server
