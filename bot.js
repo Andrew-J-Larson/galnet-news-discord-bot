@@ -253,7 +253,7 @@ function loadSettings() {
 }
 
 // delete all bot settings
-function deleteSettings() {
+function deleteSettings(serverId) {
     // if there is a server entry in settings object, delete it
     if (settings[serverId]) {
         try {
