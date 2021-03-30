@@ -1,7 +1,7 @@
 # Galnet News Discord Bot
 DEV NOTE: So far most features are working as intended (except for the `api/galnet-all` not working for the moment, so I have to use the limited `api/galnet`), but I'm always open to input/merges to change or add new features/fix bugs!
 
-If you want, you can now [invite the Galnet News discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
+### If you want, you can now [invite the Galnet News discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
 
 Since this bot was made with [Node.js](https://nodejs.org), you'll need to make sure to install the latest LTS version as that's what I've been using with this project.
 
