@@ -1,8 +1,13 @@
 # Galnet News Discord Bot
 DEV NOTE: So far most features are working as intended (except for the `api/galnet-all` not working for the moment, so I have to use the limited `api/galnet`), but I'm always open to input/merges to change or add new features/fix bugs!
 
-### If you want, you can now [invite the Galnet News discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
+### If you want, you can now [invite the Galnet News Discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
 
+## Appearance
+![Example](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/example.png?raw=true) | ![Information](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/information.png?raw=true)
+-- | --
+
+## Want to modify and run your own instance?
 Since this bot was made with [Node.js](https://nodejs.org), you'll need to make sure to install the latest LTS version as that's what I've been using with this project.
 
 ### Initial Setup
@@ -18,10 +23,6 @@ Since this bot was made with [Node.js](https://nodejs.org), you'll need to make 
 5. Afterwards, you can go back into the git clone and start the bot with `npm start`. \* Not required, but I recommend using [pm2](https://www.npmjs.com/package/pm2) (or another production process manager) for node, as it'll make headless setup a lot easier.
 6. Lastly, you'll need to go back to the developer applications website so you can create the bot invite link. I suggest using the permissions code `523328`, but at this time it only needs permissions for viewing channels, sending messages, embedding links, attaching files, using external emojis, and mentioning `@everyone`/`@here`/all roles. You'll want to make sure to also have the scope set to `bot`.
 7. Then you can use the link, which should look something like `https://discord.com/api/oauth2/authorize?client_id=[your-client-id]&permissions=523328&scope=bot`, to add it to one server.
-
-### Appearance
-![Example](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/example.png?raw=true) | ![Information](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/information.png?raw=true)
--- | --
 
 ### Node.js Libraries Used
 - **[discord.js](https://github.com/discordjs/discord.js)** - A powerful JavaScript library for interacting with the [Discord API](https://discord.com/developers/docs/intro).
