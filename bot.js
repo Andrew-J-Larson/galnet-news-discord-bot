@@ -258,7 +258,7 @@ function deleteSettings() {
         try {
             delete settings[serverId];
             console.log(`${serverSaveFile}: Deleted server settings from object.`);
-        } else {
+        } catch(err) {
             console.error(`${serverSaveFile}: Couldn't delete server settings from object. Error: ` + err);
         }
     }
