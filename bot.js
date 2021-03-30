@@ -217,9 +217,10 @@ function loadSettings() {
 
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
+                            console.log(serverId + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
-                                console.log(index + ' ' + line);
+                                console.log('\t' + index + ' ' + line);
 
                                 // check and load in settings to specific server id entry
                                 for (let i = 0; i < keys.length; i++) {
