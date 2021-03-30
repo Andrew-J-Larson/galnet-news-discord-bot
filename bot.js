@@ -191,9 +191,9 @@ function loadSettings() {
             fs.mkdirSync(SERVER_SAVE_DIR);
         } catch(err) {
             serversFolderAccess = false;
-            console.error("Couldn't create `servers` folder to store server settings.");
+            console.error("\nCouldn't create `servers` folder to store server settings.");
         }
-        console.log('Bot has been activated for the first time, no settings to load for any server.');
+        console.log('\nBot has been activated for the first time, no settings to load for any server.');
     } else { // we have a servers folder to look through
         try {
             // for every file, check text
@@ -212,14 +212,14 @@ function loadSettings() {
                         // check to make sure that a specific server's settings hasn't already loaded in
                         if (settings[serverId] && settings[serverId].prefix) {
                             // this shouldn't actually ever happen
-                            console.log("Some how the server settings has already loaded in for: " + serverId);
+                            console.log("\nSome how the server settings has already loaded in for: " + serverId);
                         } else {
                             // create new server entry with default settings
                             settings[serverId] = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
-                            console.log(serverId + ':');
+                            console.log('\n' + serverId + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
                                 console.log('\t' + index + ' ' + line);
@@ -242,12 +242,12 @@ function loadSettings() {
 
                         totalSettingsLoaded += settingsLoaded;
                     } else {
-                        console.error('Tried to load a non-server save file named: ' + file);
+                        console.error('\nTried to load a non-server save file named: ' + file);
                     }
                 }
             });
         } catch(err) {
-            console.log("Couldn't access the servers folder, or one or more server save files: " + err);
+            console.log("\nCouldn't access the servers folder, or one or more server save files: " + err);
         }
     }
     
@@ -357,7 +357,7 @@ function setPrefix(msg, prefix) {
 
 // sends and formats article post to discord, or to the feed channel if msg is null
 function createArticlePost(msg, post) {
-    let serverId = msg.guild ? msg.guild.id : null;
+    let serverId = msg ? (msg.guild ? msg.guild.id : null) : null;
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
     let body = htmlToText(post.body, HTML_TO_TEXT_DOUBLE_LINEBREAKS).replace(/\r/g,'').trim();
@@ -802,7 +802,7 @@ client.once('ready', () => {
     setInterval(function() {
         checkFeed();
     }, FEED_INTERVAL_SPEED);
-    console.log(`Feed checker interval started.`);
+    console.log('\nFeed checker interval started.\n');
 });
 
 // joining a server
