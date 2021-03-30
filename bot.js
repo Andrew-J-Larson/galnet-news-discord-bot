@@ -33,7 +33,8 @@ const FIELD_VALUE_LENGTH = 1024;
 const FIELDS = 25;
 
 // SAVE LOCATION
-const SAVE_FILE = './settings.txt';
+const SERVER_SAVE_DIR = './servers/'; // FIX ME - IMPLEMENT
+const SAVE_POSTFIX = '.guild';
 
 // BOT CONSTANTS
 
@@ -42,7 +43,7 @@ const IN_JSON_FORMAT = '?_format=json';
 const GITHUB_REPO_URL = 'https://github.com/TheAlienDrew/galnet-news-discord-bot';
 const BOT_NAME = 'Galnet News';
 const DEFAULT_PREFIX = 'gnn';
-const PRESENCE_NAME = `@${BOT_NAME} help`;
+const PRESENCE_NAME = `@${BOT_NAME} help | for commands`;
 const NO_PERMISSION = "Sorry, but you don't have permissions for that command.";
 const MAIN_BOT_COLOR = 0xFF9226; // LIGHTER_ORANGE = 0xFF9226; DARKER_ORANGE = 0xF07B05
 const ED_DOMAIN = 'elitedangerous.com';
@@ -64,8 +65,6 @@ const BOT_THUMBNAIL_IMAGE = GNN_LOGO_ORANGE_THHUMB;
 const BOT_FOOTER_IMAGE = GNN_LOGO_WHITE_BOT_IMAGE;
 const REAL_TO_GAME_YEAR_DIFF = 1286;
 const GAME_START_YEAR = 3300;
-// FIX ME!!!
-const FIRST_POST_DATE = '22-08-3304'; // FIX ME!!! Actually is 23-08-3304 and the actual first date ever was 05-07-3301
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
 const HTML_TO_TEXT_SINGLE_LINEBREAK = {
@@ -94,12 +93,18 @@ const HTML_TO_TEXT_DOUBLE_LINEBREAKS = {
 };
 const NEWEST_POST_FILE = './newest-post.txt';
 
+const DEFAULT_SETTINGS = {prefix: DEFAULT_PREFIX,
+                          feedChannel: null,
+                          feedRole: null};
+
 // BOT VARIABLES
 
-let settings = {prefix: DEFAULT_PREFIX,
-                feedServer: null,
-                feedChannel: null,
-                feedRole: null};
+let serversFolderAccess = true; // prevents creation of settings files when it doesn't have access to servers folder
+
+// each server's settings will be stored as an entry in the settings like such:
+// [server id]: {settings object}
+// the inital settings object get's a deep copy of the DEFAULT_SETTINGS object
+let settings = {};
 
 // FUNCTIONS
 
@@ -175,56 +180,129 @@ function escapeMarkdown(text) {
 
 // load all bot settings
 function loadSettings() {
-    // check for file existence before trying to load
-    let settingsLoaded = false;
-    let data;
-    try {
-        data = fs.readFileSync(SAVE_FILE, 'utf8');
-        
-        // loop through lines until correct setting is found or until end of file
-        data.toString().split('\n').forEach(function(line, index, arr) {
-            if (index === arr.length - 1 && line === "") return;
-            console.log(index + ' ' + line);
+    // check for folder/file existence before trying to load
+    let totalSettingsLoaded = 0;
 
-            // check and load in settings
-            let keys = Object.keys(settings);
-            for (let i = 0; i < keys.length; i++) {
-                let key = keys[i];
-                let keyStart = key + '=';
-                if (line.startsWith(keyStart)) {
-                    settings[key] = line.substring(keyStart.length)
-                    settingsLoaded++;
+    // check if servers folder exists, and if not, to create it
+    if (!fs.existsSync(SERVER_SAVE_DIR)) {
+        try {
+            fs.mkdirSync(SERVER_SAVE_DIR);
+        } catch(err) {
+            serversFolderAccess = false;
+            console.error("Couldn't create `servers` folder to store server settings.");
+        }
+        console.log('Bot has been activated for the first time, no settings to load for any server.');
+    } else { // we have a servers folder to look through
+        try {
+            // for every file, check text
+            fs.readdirSync(SERVER_SAVE_DIR).forEach(file => {
+                let settingsLoaded = 0;
+
+                // make sure the file we are reading from follows our settings save postfix
+                if (file.endsWith(SAVE_POSTFIX)) {
+                    // need to remove the postfix from the file to get the server id
+                    let serverId = file.replace(SAVE_POSTFIX, '');
+
+                    // confirm serverId is a real server we are connected to (avoids invalid save files)
+                    if (client.guilds.cache.get(serverId)) {
+                        let data = fs.readFileSync(SERVER_SAVE_DIR + file, 'utf8');
+
+                        // check to make sure that a specific server's settings hasn't already loaded in
+                        if (settings[serverId] && settings[serverId].prefix) {
+                            // this shouldn't actually ever happen
+                            console.log("Some how the server settings has already loaded in for: " + serverId);
+                        } else {
+                            // create new server entry with default settings
+                            settings[serverId] = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+
+                            // loop through lines until correct setting is found or until end of file
+                            let keys = Object.keys(settings[serverId]);
+                            data.toString().split('\n').forEach(function(line, index, arr) {
+                                if (index === arr.length - 1 && line === "") return;
+                                console.log(index + ' ' + line);
+
+                                // check and load in settings to specific server id entry
+                                for (let i = 0; i < keys.length; i++) {
+                                    let key = keys[i];
+                                    let keyStart = key + '=';
+                                    if (line.startsWith(keyStart)) {
+                                        settings[serverId][key] = line.substring(keyStart.length)
+                                        settingsLoaded++;
+                                    }
+                                }
+                            });
+
+                            if (settingsLoaded == keys.length) console.log('Settings loaded successfully');
+                            else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
+                            else console.log('No settings found in file to load');
+                        }
+
+                        totalSettingsLoaded += settingsLoaded;
+                    } else {
+                        console.error('Tried to load a non-server save file named: ' + file);
+                    }
                 }
-            }
-        });
-
-        if (settingsLoaded == Object.keys(settings).length) console.log('Settings loaded successfully');
-        else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
-        else console.log('No settings found in file to load');
-    } catch(err) {
-        console.log('No settings file to load');
+            });
+        } catch(err) {
+            console.log("Couldn't access the servers folder, or one or more server save files: " + err);
+        }
     }
     
-    return settingsLoaded;
+    return totalSettingsLoaded;
+}
+
+// delete all bot settings
+function deleteSettings() {
+    // if there is a server entry in settings object, delete it
+    if (settings[serverId]) {
+        try {
+            delete settings[serverId];
+            console.log(`${serverSaveFile}: Deleted server settings from object.`);
+        } else {
+            console.error(`${serverSaveFile}: Couldn't delete server settings from object. Error: ` + err);
+        }
+    }
+    // if there is a settings file for the server, delete it
+    let serverSaveFile = SERVER_SAVE_DIR + serverId + SAVE_POSTFIX;
+    if (fs.existsSync(serverSaveFile)) {
+        try {
+            fs.unlinkSync(path);
+            console.log(`${serverSaveFile}: Deleted server settings file.`);
+        } catch(err) {
+            console.error(`${serverSaveFile}: Couldn't delete server settings file. Error: ` + err);
+        }
+    }
 }
 
 // save all bot settings
-function saveSettings() {
-    // create/overwrite existing save file
-    let saveString = '';
-    let keys = Object.keys(settings);
-    for (let i = 0; i < keys.length; i++) {
-        let key = keys[i];
-        let keyStart = key + '=';
-        if (settings[key]) saveString += keyStart + settings[key] + '\n';
-    }
+function saveSettings(serverId) {
+    // if the servers folder wasn't created or can't access, prevent saving server settings
+    if (serversFolderAccess && serverId) {
+        // need to add entry to settings object if there doesn't already appear to be one
+        if (!settings[serverId]) {
+            settings[serverId] = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+        }
 
-    // write to file
-    try {
-        fs.writeFileSync(SAVE_FILE, saveString);
-        console.log('Settings saved successfully');
-    } catch(err) {
-        console.error(err);
+        // create/overwrite existing save file
+        let saveString = '';
+        let keys = Object.keys(settings[serverId]);
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let keyStart = key + '=';
+            if (settings[serverId][key]) saveString += keyStart + settings[serverId][key] + '\n';
+        }
+
+        // write to file
+        try {
+            fs.writeFileSync(SERVER_SAVE_DIR + serverId + SAVE_POSTFIX, saveString);
+            console.log(`${serverId}: Settings saved successfully.`);
+        } catch(err) {
+            console.error(`${serverId}: Couldn't save settings. Error: ` + err);
+        }
+    } else if (!serverId) { // should never get beyond this point
+        console.error('No server id was passed into function.');
+    } else {
+        console.error("No access to servers folder, or it doesn't exist.");
     }
 }
 
@@ -239,22 +317,24 @@ function msgLocate(msg) {
 
 // set the prefix for the bot to use
 function setPrefix(msg, prefix) {
+    let serverId = msg.guild.id;
+
     // either set or show the prefix
     if (prefix) {
         // don't save when it's not needed
         prefix = prefix.toLowerCase();
-        if (prefix == settings.prefix) {
+        if (prefix == settings[serverId].prefix) {
             msgLocate(msg).send('The bot already has the prefix `' + prefix + '`.');
             return false;
         } else {
-            settings.prefix = prefix;
-            saveSettings();
+            settings[serverId].prefix = prefix;
+            saveSettings(serverId);
 
             // need to update the status to use new prefix
             client.user.setPresence({
                 status: 'available',
                 activity: {
-                    name: `${settings.prefix} help | for commands`,
+                    name: PRESENCE_NAME,
                     type: PLAY,
                     url: GITHUB_REPO_URL
                 }
@@ -264,7 +344,7 @@ function setPrefix(msg, prefix) {
             return true;
         }
     } else {
-        msgLocate(msg).send('The current prefix is `' + settings.prefix + '`.');
+        msgLocate(msg).send('The current prefix is `' + settings[serverId].prefix + '`.');
         return false;
     }
 
@@ -274,7 +354,7 @@ function setPrefix(msg, prefix) {
 
 // sends and formats article post to discord, or to the feed channel if msg is null
 function createArticlePost(msg, post) {
-    let server = client.guilds.cache.get(settings.feedServer);
+    let serverId = msg.guild.id;
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
     let body = htmlToText(post.body, HTML_TO_TEXT_DOUBLE_LINEBREAKS).replace(/\r/g,'').trim();
@@ -366,25 +446,38 @@ function createArticlePost(msg, post) {
             }
         }
 
-        // send to feed channel if not part of msg
+        // send to all discord servers feed channels if not part of msg
         if (!msg) {
-            let channel = server.channels.cache.get(settings.feedChannel);
-            let mentionRole = settings.feedRole ? server.roles.cache.get(settings.feedRole).toString() : null;
-            // optionally included mention role
-            if (mentionRole) {
-                channel.send(mentionRole, embed).catch(err => {
-                    console.error(err);
-                    return false;
-                });
-            } else {
-                channel.send(embed).catch(err => {
-                    console.error(err);
-                    return false;
-                });
+            // need to loop through all servers loaded in settings
+            let keys = Object.keys(settings);
+            for (let i = 0; i < keys.length; i++) {
+                // check if server has active feed channel
+                serverId = keys[i];
+                if (settings[serverId].feedChannel) {
+                    let server = client.guilds.cache.get(serverId);
+                    let channel = server.channels.cache.get(settings[serverId].feedChannel);
+                    let mentionRole = settings[serverId].feedRole ? server.roles.cache.get(settings[serverId].feedRole).toString() : null;
+                    // optionally included mention role
+                    if (mentionRole) {
+                        channel.send(mentionRole, embed).catch(err => {
+                            // mention role has been deleted likely
+                            console.error(`${serverId}: Has the role been deleted? Error: ` + err);
+                        });
+                    } else if (channel) {
+                        channel.send(embed).catch(err => {
+                            // channel has been deleted likely
+                            console.error(`${serverId}: Do we have access to the channel? Error: ` + err);
+                        });
+                    } else if (!channel && server) {
+                        console.error(`${serverId}: Has the channel been deleted?`);
+                    } else { // !server
+                        console.error(`${serverId}: Has the server been deleted?`);
+                    }
+                }
             }
         } else {
             msgLocate(msg).send(embed).catch(err => {
-                console.error(err);
+                console.error(`${serverId}: ` + err);
                 return false;
             });
         }
@@ -533,8 +626,10 @@ function getAllGnnPosts(msg) {
 
 // sets the role to mention for the feed, role name/mention is required
 function setFeedRole(msg, roleArgs) {
+    let serverId = msg.guild.id;
+
     // return if there is no channel set
-    if (!settings.feedChannel) {
+    if (!settings[serverId] || !settings[serverId].feedChannel) {
         msgLocate(msg).send("Sorry, but there's no channel set for the feed to send messages and mention in.");
         return false;
     }
@@ -564,26 +659,26 @@ function setFeedRole(msg, roleArgs) {
                 if (!roleId) roleId = msg.guild.roles.cache.find(role => role.id === roleArg).id;
             }
         }
-    } else roleId = settings.feedRole; // where the following if will disable it
+    } else roleId = settings[serverId].feedRole; // where the following if will disable it
 
     if (roleId) {
         let roleResult = true;
         
-        if (roleId == settings.feedRole) {
-            settings.feedRole = null;
+        if (roleId == settings[serverId].feedRole) {
+            settings[serverId].feedRole = null;
             msgLocate(msg).send('The feed role mention is now turned off.');
-        } else if (!msg.guild.channels.cache.get(settings.feedChannel).permissionsFor(msg.guild.me).has(EVERYONE)
+        } else if (!msg.guild.channels.cache.get(settings[serverId].feedChannel).permissionsFor(msg.guild.me).has(EVERYONE)
           && (roleId == msg.guild.roles.cache.everyone.id || roleId == roleId == msg.guild.roles.cache.here.id)) {
             msgLocate(msg).send("Sorry, but I don't have the permission to mention everyone/here in the currently set channel.");
             roleResult = false;
         } else if (msg.guild.roles.cache.get(roleId).mentionable) {
-            settings.feedRole = roleId;
+            settings[serverId].feedRole = roleId;
             msgLocate(msg).send('Automatic feed role mention changed to ' + msg.guild.roles.cache.get(roleId).toString() + '.', {'allowedMentions': { 'users' : []}});
         } else {
             msgLocate(msg).send("Sorry, but that role is currently not mentionable.");
         }
 
-        saveSettings();
+        saveSettings(serverId);
         return roleResult;
     } else {
         if (roleArg) msgLocate(msg).send("Sorry, that's either not a real role or it was entered incorrectly.");
@@ -615,28 +710,19 @@ function setFeedChannel(msg, channelArg) {
     }
 
     if (channelId) {
-        if (channelId == settings.feedChannel) {
-            settings.feedServer = null;
-            settings.feedChannel = null;
-            settings.feedRole = null;
-            
-            // need to delete the newest post file so turning feed back on won't start from an old post
-            try {
-              fs.unlinkSync(NEWEST_POST_FILE);
-            } catch(err) {
-              console.error(err);
-            }
+        if (channelId == settings[serverId].feedChannel) {
+            settings[serverId].feedChannel = null;
+            settings[serverId].feedRole = null;
             
             msgLocate(msg).send('The feed is now turned off.');
         } else if (msg.guild.channels.cache.get(channelId).permissionsFor(msg.guild.me).has(SEND)) {
-            settings.feedServer = serverId;
-            settings.feedChannel = channelId;
+            settings[serverId].feedChannel = channelId;
             msgLocate(msg).send('Automatic feed channel changed to ' + msg.guild.channels.cache.get(channelId).toString() + '.');
         } else {
             msgLocate(msg).send("Sorry, but I don't have the permission to send messages in that channel.");
         }
 
-        saveSettings();
+        saveSettings(serverId);
         return true;
     } else {
         msgLocate(msg).send("Sorry, that's either not a real channel or it was entered incorrectly.");
@@ -644,19 +730,12 @@ function setFeedChannel(msg, channelArg) {
     }
 }
 
-// this will check for new posts
+// this will check for new posts, and update the newest post file information
 function checkFeed() {
-    // check if feedChannel is active
-    if (!settings.feedChannel) return false;   
-
-    // check if we can even access the guild information
-    let server = client.guilds.cache.get(settings.feedServer);
-    if (!server || !server.available) return console.log('The server is not available.');
-
-    // start checking for new posts
-    let rssParser = new RSSParser(); 
-
     (async () => {
+        // start checking for new posts
+        let rssParser = new RSSParser();
+
         let newPostAvailable = true;
         let feed = await rssParser.parseURL(GNN_RSS_URL);
 
@@ -669,13 +748,15 @@ function checkFeed() {
         let filePostNode;
         try {
             data = fs.readFileSync(NEWEST_POST_FILE, 'utf8');
-            
+
             // check first line of file with string of feed
             filePostNode = data.toString().replace(/\n$/, '');
+            // check to make sure we actually have a new post
             if (checkPostNode == filePostNode) newPostAvailable = false;
         } catch(err) {
             console.log('Feed file will be initialized.');
         }
+
         // if there's still a new post available, save it
         if (newPostAvailable) {
             console.log(`Found a new post from Galnet News at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
@@ -690,7 +771,7 @@ function checkFeed() {
                 }
             }
         } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
-        
+
         return newPostAvailable;
     })();
 }
@@ -725,7 +806,10 @@ client.once('ready', () => {
 client.on("guildCreate", guild => {
     console.log(`Joined a new guild: ${guild.name}`);
 
-    // set status after settings are loaded in
+    // need to create entry in settings object
+    saveSettings(guild.id);
+
+    // set status
     client.user.setPresence({
         status: 'available',
         activity: {
@@ -738,20 +822,34 @@ client.on("guildCreate", guild => {
 // removed from a server
 client.on("guildDelete", guild => {
     console.log(`Left a guild: ${guild.name}`);
+
+    // need to delete entry in settings object, and delete server settings file
+    deleteSettings(guild.id);
+
+    // set status
+    client.user.setPresence({
+        status: 'available',
+        activity: {
+            name: PRESENCE_NAME,
+            type: PLAY,
+            url: GITHUB_REPO_URL
+        }
+    });
 })
 
 // command functions should be in here
 client.on('message', msg => {
     if (msg.author.bot) return; // don't let bots control our bot!
+    let serverId = msg.guild.id;
 
     // check for prefix
     let before = msg.content.split(/ +/g).shift();
     let mentioned = getUserFromMention(before);
-    let hasPrefix = before.toLowerCase() === settings.prefix;
+    let hasPrefix = before.toLowerCase() === settings[serverId].prefix;
     let hasMention = mentioned && msg.mentions.users.first() == client.user;
     if (hasPrefix || hasMention) {
         // useful information for commands, for the mention the 3 is for the '<@!>' characters
-        const args = hasPrefix ? msg.content.slice(settings.prefix.length).trim().split(/ +/g)
+        const args = hasPrefix ? msg.content.slice(settings[serverId].prefix.length).trim().split(/ +/g)
                                : msg.content.slice(mentioned.id.length + 4).trim().split(/ +/g);  
         const command = args.shift().toLowerCase();
 
@@ -764,10 +862,10 @@ client.on('message', msg => {
               .setColor(MAIN_BOT_COLOR)
               .setAuthor(BOT_NAME + ' v' + version)
               .setTitle('__Commands__')
-              .setDescription(`To run a command: \`${settings.prefix} <command>\`\n\n` +
+              .setDescription(`To run a command: \`${settings[serverId].prefix} <command>\`\n\n` +
                 `**help** - Brings up this help page\n` +
                 `**ping** - Gets the ping time in milliseconds\n` +
-                `**date** [\`DD MM YYYY\` / \`DD MMM YYYY\`] - Gets post(s) from a certain day\n` +
+                //`**date** [\`DD MM YYYY\` / \`DD MMM YYYY\`] - Gets post(s) from a certain day\n` +
                 `**newest** or **latest** - Gets the latest post(s)\n` +
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
@@ -777,7 +875,7 @@ client.on('message', msg => {
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
                 embed.addField('__Admin Commands__',
-                  `**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n` +
+                  //`**all** - This will send all news posts, from oldest to newest (warning: usually takes a long time)\n` +
                   `**feedchannel** [name / id / mention] - Sets the feed channel or toggles it off, and no arguments uses the channel command was sent in\n` +
                   `**feedrole** [name (case sensitive) / id / mention] - Sets the role to mention or toggles it off, no arguments turns off the role mention\n` +
                   `**prefix** [no-whitespace-string] - Sets the prefix for the bot, and no arguments shows the current prefix`);
@@ -805,10 +903,10 @@ client.on('message', msg => {
         // <===== BOT COMMANDS HERE =====> //
 
         // DATE
-        else if (command === 'date') {
+        /*else if (command === 'date') {
             console.log(`Executed date command`);
             getGnnPosts(msg, args);
-        }
+        }*/
 
         // NEWEST / LATEST
         else if (command === 'newest' || command == 'latest') {
@@ -826,17 +924,17 @@ client.on('message', msg => {
         else if (command === 'feedinfo') {
             console.log(`Executed feedinfo command`);
             msgLocate(msg).send(
-                settings.feedChannel
+                settings[serverId].feedChannel
                 ? ('The feed is currently set to send new posts to '
-                  + msg.guild.channels.cache.get(settings.feedChannel).toString()
-                  + (settings.feedRole ? (', and mention the ' + msg.guild.roles.cache.get(settings.feedRole).toString() + ' role') : '') + '.')
-                : 'The feed is currently turned off.', settings.feedRole ? {'allowedMentions': { 'users' : []}} : null);
+                  + msg.guild.channels.cache.get(settings[serverId].feedChannel).toString()
+                  + (settings[serverId].feedRole ? (', and mention the ' + msg.guild.roles.cache.get(settings[serverId].feedRole).toString() + ' role') : '') + '.')
+                : 'The feed is currently turned off.', settings[serverId].feedRole ? {'allowedMentions': { 'users' : []}} : null);
         }
 
         // <===== ADMIN ONLY COMMANDS =====> //
 
         // ALL
-        else if (command === 'all') {
+        /*else if (command === 'all') {
             if (!msg.member.hasPermission(ADMIN)) {
                 console.log(`User doesn't have permission for command`);
                 msgLocate(msg).send(NO_PERMISSION);
@@ -844,7 +942,7 @@ client.on('message', msg => {
             }
             console.log(`Executed all command`);
             getAllGnnPosts(msg);
-        }
+        }*/
 
         // FEED CHANNEL
         else if (command === 'feedchannel') {
