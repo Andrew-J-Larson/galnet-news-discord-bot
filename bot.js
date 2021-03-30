@@ -267,7 +267,7 @@ function deleteSettings(serverId) {
     let serverSaveFile = SERVER_SAVE_DIR + serverId + SAVE_POSTFIX;
     if (fs.existsSync(serverSaveFile)) {
         try {
-            fs.unlinkSync(path);
+            fs.unlinkSync(serverSaveFile);
             console.log(`${serverSaveFile}: Deleted server settings file.`);
         } catch(err) {
             console.error(`${serverSaveFile}: Couldn't delete server settings file. Error: ` + err);
