@@ -67,7 +67,7 @@ const REAL_TO_GAME_YEAR_DIFF = 1286;
 const GAME_START_YEAR = 3300;
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
-const HTML_TO_TEXT_SINGLE_LINEBREAK = {
+/*const HTML_TO_TEXT_SINGLE_LINEBREAK = {
     wordwrap: null,
     formatters: {
         'customLineBreaks': function (elem, walk, builder, formatOptions) {
@@ -76,9 +76,10 @@ const HTML_TO_TEXT_SINGLE_LINEBREAK = {
         }
     },
     tags: { 'br': { format: 'customLineBreaks',
-                    options: { trailingLineBreaks: 2 } },
-            'p': { options: { trailingLineBreaks: 2 } } }
-};
+                    options: { trailingLineBreaks: 1 } },
+            'p': { options: { trailingLineBreaks: 1 } },
+            'ul': { options: { itemPrefix: ' • ' } } }
+};*/
 const HTML_TO_TEXT_DOUBLE_LINEBREAKS = {
     wordwrap: null,
     formatters: {
@@ -89,7 +90,8 @@ const HTML_TO_TEXT_DOUBLE_LINEBREAKS = {
     },
     tags: { 'br': { format: 'customLineBreaks',
                     options: { trailingLineBreaks: 2 } },
-            'p': { options: { trailingLineBreaks: 2 } } }
+            'p': { options: { trailingLineBreaks: 2 } },
+            'ul': { options: { itemPrefix: ' • ' } } }
 };
 const NEWEST_POST_FILE = './newest-post.txt';
 
@@ -355,7 +357,7 @@ function setPrefix(msg, prefix) {
 
 // sends and formats article post to discord, or to the feed channel if msg is null
 function createArticlePost(msg, post) {
-    let serverId = msg.guild.id;
+    let serverId = msg.guild ? msg.guild.id : null;
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
     let body = htmlToText(post.body, HTML_TO_TEXT_DOUBLE_LINEBREAKS).replace(/\r/g,'').trim();
