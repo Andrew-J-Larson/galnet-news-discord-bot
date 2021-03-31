@@ -1,6 +1,6 @@
 {
   "name": "galnet-news-discord-bot",
-  "version": "1.5.6-beta",
+  "version": "1.5.6-beta2",
   "description": "Just a bot for getting Galnet News whenever a new post comes out!",
   "main": "bot.js",
   "dependencies": {
