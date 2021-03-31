@@ -1020,7 +1020,7 @@ client.on('message', msg => {
 
         // HELP
         if (command === 'help') {
-            console.log(`Executed help command`);
+            console.log(`${serverId}: Executed help command`);
             const embed = new Discord.MessageEmbed()
               .setColor(MAIN_BOT_COLOR)
               .setAuthor(BOT_NAME + ' v' + version)
@@ -1055,7 +1055,7 @@ client.on('message', msg => {
 
         // PING
         else if (command === 'ping') {
-            console.log(`Executed ping command`);
+            console.log(`${serverId}: Executed ping command`);
             msgLocate(msg).send("Pinging...").then((msg)=> {
                 msg.edit("Still pinging...").then((msg)=> {
                     msg.edit("Pong! `" + (msg.editedTimestamp - msg.createdTimestamp) + "ms`");
@@ -1067,25 +1067,25 @@ client.on('message', msg => {
 
         // DATE
         /*else if (command === 'date') {
-            console.log(`Executed date command`);
+            console.log(`${serverId}: Executed date command`);
             getGnnPosts(msg, args);
         }*/
 
         // NEWEST / LATEST
         else if (command === 'newest' || command == 'latest') {
-            console.log(`Executed newest/latest command`);
+            console.log(`${serverId}: Executed newest/latest command`);
             getGnnPosts(msg);
         }
 
         // TOP
         else if (command == 'top') {
-            console.log(`Executed top command`);
+            console.log(`${serverId}: Executed top command`);
             getGnnTopPost(msg);
         }
         
         // FEED INFO
         else if (command === 'feedinfo') {
-            console.log(`Executed feedinfo command`);
+            console.log(`${serverId}: Executed feedinfo command`);
             msgLocate(msg).send(
                 settings[serverId].feedChannel
                 ? ('The feed is currently set to send new posts to '
@@ -1114,7 +1114,7 @@ client.on('message', msg => {
                 msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
-            console.log(`Executed feedchannel command`);
+            console.log(`${serverId}: Executed feedchannel command`);
             setFeedChannel(msg, args[0]);
         }
 
@@ -1125,7 +1125,7 @@ client.on('message', msg => {
                 msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
-            console.log(`Executed feedrole command`);
+            console.log(`${serverId}: Executed feedrole command`);
             setFeedRole(msg, args);
         }
 
@@ -1136,7 +1136,7 @@ client.on('message', msg => {
                 msgLocate(msg).send(NO_PERMISSION);
                 return;
             }
-            console.log(`Executed prefix command`);
+            console.log(`${serverId}: Executed prefix command`);
             setPrefix(msg, args[0]);
         }
 
@@ -1144,7 +1144,7 @@ client.on('message', msg => {
 
         // NOT A COMMAND, or NO PERMISSION
         else {
-            console.log(`Invalid command entered`);
+            console.log(`${serverId}: Invalid command entered: ${command}`);
             msgLocate(msg).send("Sorry, but that's not a command, please look at the help page.");
         }
     } 
