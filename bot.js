@@ -358,6 +358,7 @@ function loadSettings() {
     let totalSettingsLoaded = 0;
 
     // check if servers folder exists, and if not, to create it
+    console.log('Attempting to load all server settings...');
     if (!fs.existsSync(SERVER_SAVE_DIR)) {
         try {
             fs.mkdirSync(SERVER_SAVE_DIR);
@@ -392,10 +393,7 @@ function loadSettings() {
 
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
-                            let serverOwnerId = serverGuild.ownerID;
-                            let serverOwner = serverOwnerId ? syncGetOwnerUsername(serverOwnerId) : null;
-                            let serverOwnerUsername = serverOwner ? (serverOwner.username + '#' + serverOwner.discriminator) : null;
-                            console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
+                            console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
                                 console.log('\t' + index + ' ' + line);
