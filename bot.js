@@ -6,7 +6,9 @@ const fetch = require('node-fetch');
 const RSSParser = require('rss-parser');
 const moment = require('moment'); require('moment-precise-range-plugin');
 const { htmlToText } = require('html-to-text');
-const he = require("he");
+const he = require('he');
+const forceSync = require('sync-rpc');
+const syncGetOwnerUsername = forceSync(require.resolve('./async-as-sync.js'));
 
 const client = new Discord.Client();
 
@@ -381,8 +383,7 @@ function loadSettings() {
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
                             let serverOwnerId = serverGuild.ownerID;
-                            let serverOwner = serverGuild.members.cache.get(serverOwnerId);
-                            console.log(serverGuild);
+                            let serverOwner = serverOwnerId ? syncGetOwnerUsername(client, serverOwnerId) : null;
                             let serverOwnerUsername = serverOwner ? (serverOwner.username + '#' + serverOwner.discriminator) : null;
                             console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
