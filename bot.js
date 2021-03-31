@@ -384,10 +384,10 @@ function loadSettings() {
                             let serverOwner = null;
                             if (serverOwnerId) {
                                 (async () => {
-                                    await client.users.fetch(serverOwnerId).then(function(guildOwner) {console.log(guildOwner)});
+                                    await client.users.fetch(serverOwnerId).then(function(guildOwner) {serverOwner = guildOwner});
                                 })();
                             }
-                            let serverOwnerUsername = serverOwner ? serverOwner.username : null;
+                            let serverOwnerUsername = serverOwner ? (serverOwner.username + '#' + serverOwner.discriminator) : null;
                             console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
