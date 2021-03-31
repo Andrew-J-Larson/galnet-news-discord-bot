@@ -1,10 +1,18 @@
+const config = require('../galnet-news-discord-bot-config.json');
+const Discord = require('discord.js');
+
+const client = new Discord.Client();
+
 // needed async functions that need to work like sync functions
 function asyncGetOwnerUsername() {
-    return (client, ownerId) => {
+    return (ownerId) => {
         // Your async code here
-        console.log(client.users);
         return client.users.fetch(ownerId);
     }
 }
+
+// MAIN END
+
+client.login(config.BOT_TOKEN);
 
 module.exports = asyncGetOwnerUsername
