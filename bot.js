@@ -331,12 +331,12 @@ function escapeMarkdown(text) {
 // converts unescaped html-text-string to discord markdown
 function convertToDiscord(text) {
     let escaped = escapeMarkdown(text);
-    let converted = escaped.replaceAll(ITALIC, '*')
-                           .replaceAll(BOLD, '**')
-                           .replaceAll(STRIKETHROUGH, '~~')
-                           .replaceAll(UNDERLINE, '__')
-                           .replaceAll(HEADING_START, '**__')
-                           .replaceAll(HEADING_END, '__**');
+    let converted = escaped.replace(new RegExp(ITALIC, 'g'), '*')
+                           .replace(new RegExp(BOLD, 'g'), '**')
+                           .replace(new RegExp(STRIKETHROUGH, 'g'), '~~')
+                           .replace(new RegExp(UNDERLINE, 'g'), '__')
+                           .replace(new RegExp(HEADING_START, 'g'), '**__')
+                           .replace(new RegExp(HEADING_END, 'g'), '__**');
     return converted;
 }
 
