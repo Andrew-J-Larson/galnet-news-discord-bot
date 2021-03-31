@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 const RSSParser = require('rss-parser');
 const moment = require('moment'); require('moment-precise-range-plugin');
 const { htmlToText } = require('html-to-text');
+const he = require("he");
 
 const client = new Discord.Client();
 
@@ -67,32 +68,179 @@ const REAL_TO_GAME_YEAR_DIFF = 1286;
 const GAME_START_YEAR = 3300;
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
-/*const HTML_TO_TEXT_SINGLE_LINEBREAK = {
+
+const ITALIC = '[:i:]';
+const BOLD = '[:b:]';
+const STRIKETHROUGH = '[:s:]';
+const UNDERLINE = '[:u:]';
+const HEADING = '[:h:]';
+const HEADING_START = '[:hs:]';
+const HEADING_END = '[:he:]';
+const HTML_TO_TEXT = {
     wordwrap: null,
     formatters: {
         'customLineBreaks': function (elem, walk, builder, formatOptions) {
-        builder.openBlock(formatOptions.leadingLineBreaks || 0);
+            builder.openBlock(formatOptions.leadingLineBreaks || 0);
             builder.closeBlock(formatOptions.trailingLineBreaks || 0);
+        },
+        'customItalic': function (elem, walk, builder, formatOptions) {
+            let tag = formatOptions.tag || '*';
+            builder.addInline(tag);
+            walk(elem.children, builder);
+            builder.addInline(tag);
+        },
+        'customBold': function (elem, walk, builder, formatOptions) {
+            let tag = formatOptions.tag || '**';
+            builder.addInline(tag);
+            walk(elem.children, builder);
+            builder.addInline(tag);
+        },
+        'customStrikethrough': function (elem, walk, builder, formatOptions) {
+            let tag = formatOptions.tag || '~~';
+            builder.addInline(tag);
+            walk(elem.children, builder);
+            builder.addInline(tag);
+        },
+        'customUnderline': function (elem, walk, builder, formatOptions) {
+            let tag = formatOptions.tag || '__';
+            builder.addInline(tag);
+            walk(elem.children, builder);
+            builder.addInline(tag);
+        },
+        'customLink': function (elem, walk, builder, formatOptions) {
+            function getHref () {
+                if (formatOptions.ignoreHref) { return ''; }
+                if (!elem.attribs || !elem.attribs.href) { return ''; }
+                let href = elem.attribs.href.replace(/^mailto:/, '');
+                if (formatOptions.noAnchorUrl && href[0] === '#') { return ''; }
+                href = (formatOptions.baseUrl && href[0] === '/')
+                  ? formatOptions.baseUrl + href
+                  : href;
+                return he.decode(href, builder.options.decodeOptions);
+            }
+            const href = getHref();
+            if (!href) {
+                walk(elem.children, builder);
+            } else {
+                let text = '';
+                builder.pushWordTransform(
+                  str => {
+                    if (str) { text += str; }
+                    return str;
+                  }
+                );
+
+                builder.addInline('[', { noWordTransform: true });
+                walk(elem.children, builder);
+                builder.popWordTransform();
+                builder.addInline('](' + href + ')', { noWordTransform: true });
+            }
+        },
+        'customImage': function (elem, walk, builder, formatOptions) {
+            const attribs = elem.attribs || {};
+            const alt = (attribs.alt)
+              ? he.decode(attribs.alt, builder.options.decodeOptions)
+              : '';
+            const src = (!attribs.src)
+              ? ''
+              : (formatOptions.baseUrl && attribs.src.indexOf('/') === 0)
+                ? formatOptions.baseUrl + attribs.src
+                : attribs.src;
+            const text = (!src)
+              ? alt
+              : (!alt)
+                ? '[[' + src + '](' + src + ')]'
+                : '[[' + alt + '](' + src + ')]';
+
+            builder.addInline(text);
+        },
+        'customIframe': function (elem, walk, builder, formatOptions) {
+            const attribs = elem.attribs || {};
+            const title = (attribs.title)
+              ? he.decode(attribs.title, builder.options.decodeOptions)
+              : '';
+            const src = (!attribs.src)
+              ? ''
+              : (formatOptions.baseUrl && attribs.src.indexOf('/') === 0)
+                ? formatOptions.baseUrl + attribs.src
+                : attribs.src;
+            const text = (!src)
+              ? title
+              : (!title)
+                ? '{[' + src + '](' + src + ')}'
+                : '{[' + title + '](' + src + ')}';
+
+            builder.addInline(text);
+        },
+        'customContainer': function (elem, walk, builder, formatOptions) {
+            const attribs = elem.attribs || {};
+            const aClass = (attribs.class)
+              ? he.decode(attribs.class, builder.options.decodeOptions)
+              : '';
+            // we only want it to get new lines if it is embed
+            if (aClass.includes('embed-media')) {
+                builder.openBlock({ leadingLineBreaks: formatOptions.leadingLineBreaks });
+                walk(elem.children, builder);
+                builder.closeBlock({ trailingLineBreaks: formatOptions.trailingLineBreaks });
+            } else {
+                walk(elem.children, builder);
+            }
+        },
+        'customHeading': function (elem, walk, builder, formatOptions) {
+            let tag = formatOptions.tag;
+            let tagStart = formatOptions.tagStart || (tag ? tag : '**__');
+            let tagEnd = formatOptions.tagEnd || (tag ? tag : '__**');
+            builder.openBlock({ leadingLineBreaks: formatOptions.leadingLineBreaks || 0 });
+            builder.addInline(tagStart);
+            walk(elem.children, builder);
+            builder.addInline(tagEnd);
+            builder.closeBlock({ trailingLineBreaks: formatOptions.trailingLineBreaks || 0 });
         }
     },
     tags: { 'br': { format: 'customLineBreaks',
-                    options: { trailingLineBreaks: 1 } },
-            'p': { options: { trailingLineBreaks: 1 } },
-            'ul': { options: { itemPrefix: ' • ' } } }
-};*/
-const HTML_TO_TEXT_DOUBLE_LINEBREAKS = {
-    wordwrap: null,
-    formatters: {
-        'customLineBreaks': function (elem, walk, builder, formatOptions) {
-        builder.openBlock(formatOptions.leadingLineBreaks || 0);
-            builder.closeBlock(formatOptions.trailingLineBreaks || 0);
-        }
-    },
-    tags: { 'br': { format: 'customLineBreaks',
-                    options: { trailingLineBreaks: 2 } },
-            'p': { options: { trailingLineBreaks: 2 } },
-            'ul': { options: { itemPrefix: ' • ' } } }
+                    options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'div': { format: 'customContainer',
+                     options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'p': { options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'a': { format: 'customLink' },
+            'img': { format: 'customImage' },
+            'iframe': { format: 'customIframe' },
+            'ul': { options: { itemPrefix: ' • ' } },
+            'em': { format: 'customItalic',
+                    options: { tag: ITALIC } }, // tag gets replaced after markdown escapes
+            'i': { format: 'customItalic',
+                   options: { tag: ITALIC } }, // tag gets replaced after markdown escapes
+            'strong': { format: 'customBold',
+                        options: { tag: BOLD } }, // tag gets replaced after markdown escapes
+            'b': { format: 'customBold',
+                   options: { tag: BOLD } }, // tag gets replaced after markdown escapes
+            'strike': { format: 'customStrikethrough',
+                   options: { tag: STRIKETHROUGH } }, // tag gets replaced after markdown escapes
+            's': { format: 'customStrikethrough',
+                   options: { tag: STRIKETHROUGH } }, // tag gets replaced after markdown escapes
+            'u': { format: 'customUnderline',
+                   options: { tag: UNDERLINE } }, // tag gets replaced after markdown escapes
+            'h1': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'h2': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'h3': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'h4': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'h5': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+            'h6': { format: 'customHeading',
+                    options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
+                               trailingLineBreaks: 2 } } // change 2 to 1, for single line breaks
+         }
 };
+
 const NEWEST_POST_FILE = './newest-post.txt';
 
 const DEFAULT_SETTINGS = {prefix: DEFAULT_PREFIX,
@@ -180,6 +328,18 @@ function escapeMarkdown(text) {
     return escaped;
 }
 
+// converts unescaped html-text-string to discord markdown
+function convertToDiscord(text) {
+    let escaped = escapeMarkdown(text);
+    let converted = converted.replaceAll(ITALIC, '*')
+                             .replaceAll(BOLD, '**')
+                             .replaceAll(STRIKETHROUGH, '~~')
+                             .replaceAll(UNDERLINE, '__')
+                             .replaceAll(HEADING_START, '**__')
+                             .replaceAll(HEADING_END, '__**');
+    return converted;
+}
+
 // load all bot settings
 function loadSettings() {
     // check for folder/file existence before trying to load
@@ -191,9 +351,9 @@ function loadSettings() {
             fs.mkdirSync(SERVER_SAVE_DIR);
         } catch(err) {
             serversFolderAccess = false;
-            console.error("\nCouldn't create `servers` folder to store server settings.");
+            console.error("Couldn't create `servers` folder to store server settings.");
         }
-        console.log('\nBot has been activated for the first time, no settings to load for any server.');
+        console.log('Bot has been activated for the first time, no settings to load for any server.');
     } else { // we have a servers folder to look through
         try {
             // for every file, check text
@@ -212,14 +372,14 @@ function loadSettings() {
                         // check to make sure that a specific server's settings hasn't already loaded in
                         if (settings[serverId] && settings[serverId].prefix) {
                             // this shouldn't actually ever happen
-                            console.log("\nSome how the server settings has already loaded in for: " + serverId);
+                            console.log("Some how the server settings has already loaded in for: " + serverId);
                         } else {
                             // create new server entry with default settings
                             settings[serverId] = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
-                            console.log('\n' + serverId + ':');
+                            console.log(serverId + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
                                 console.log('\t' + index + ' ' + line);
@@ -235,19 +395,19 @@ function loadSettings() {
                                 }
                             });
 
-                            if (settingsLoaded == keys.length) console.log('Settings loaded successfully');
-                            else if (settingsLoaded) console.log('Some settings, but not all, were loaded successfully');
-                            else console.log('No settings found in file to load');
+                            if (settingsLoaded == keys.length) console.log('\tSettings loaded successfully');
+                            else if (settingsLoaded) console.log('\tSome settings, but not all, were loaded successfully');
+                            else console.log('\tNo settings found in file to load');
                         }
 
                         totalSettingsLoaded += settingsLoaded;
                     } else {
-                        console.error('\nTried to load a non-server save file named: ' + file);
+                        console.error('Tried to load a non-server save file named: ' + file);
                     }
                 }
             });
         } catch(err) {
-            console.log("\nCouldn't access the servers folder, or one or more server save files: " + err);
+            console.log("Couldn't access the servers folder, or one or more server save files: " + err);
         }
     }
     
@@ -360,7 +520,7 @@ function createArticlePost(msg, post) {
     let serverId = msg ? (msg.guild ? msg.guild.id : null) : null;
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
-    let body = htmlToText(post.body, HTML_TO_TEXT_DOUBLE_LINEBREAKS).replace(/\r/g,'').trim();
+    let body = htmlToText(post.body, HTML_TO_TEXT).replace(/\r/g,'').trim();
     let sentences = body.split('\n');
     // sometimes the title is in the body
     if (!title) {
@@ -373,8 +533,8 @@ function createArticlePost(msg, post) {
     let moreSentences = '\n' + sentences.join('\n');
     // escape discord markdown symbols
     title = escapeMarkdown(title);
-    firstSentence = escapeMarkdown(firstSentence);
-    moreSentences = escapeMarkdown(moreSentences);
+    firstSentence = convertToDiscord(firstSentence);
+    moreSentences = convertToDiscord(moreSentences);
 
     (async () => {
         // include the archive link (nice purpose for cases where articles have same slug article link)
@@ -802,7 +962,7 @@ client.once('ready', () => {
     setInterval(function() {
         checkFeed();
     }, FEED_INTERVAL_SPEED);
-    console.log(`\nFeed checker interval started.\n`);
+    console.log(`Feed checker interval started.`);
 });
 
 // joining a server
