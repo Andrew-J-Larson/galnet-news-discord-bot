@@ -266,7 +266,7 @@ function logConnectedServers() {
         let ownerId = server.ownerID;
         let owner = ownerId ? syncGetOwnerUsername(ownerId) : null;
         let ownerUsername = serverOwner ? (owner.username + '#' + owner.discriminator) : null;
-        console.log(`\t"${server.name}" (${server.id})` + (ownerUsername ? (' [Owner: ' + ownerUsername + ']'));
+        console.log(`\t"${server.name}" (${server.id})` + (ownerUsername ? (' [Owner: ' + ownerUsername + ']') : '');
     });
 }
 
