@@ -71,13 +71,13 @@ const GAME_START_YEAR = 3300;
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
 const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
 
-const ITALIC = '[:i:]';
-const BOLD = '[:b:]';
-const STRIKETHROUGH = '[:s:]';
-const UNDERLINE = '[:u:]';
-const HEADING = '[:h:]';
-const HEADING_START = '[:hs:]';
-const HEADING_END = '[:he:]';
+const ITALIC = '<i>';
+const BOLD = '<b>';
+const STRIKETHROUGH = '<s>';
+const UNDERLINE = '<u>';
+const HEADING = '<h>';
+const HEADING_START = '<hs>';
+const HEADING_END = '<he>';
 const HTML_TO_TEXT = {
     wordwrap: null,
     formatters: {
