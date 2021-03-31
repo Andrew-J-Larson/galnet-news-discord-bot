@@ -36,7 +36,7 @@ const FIELD_VALUE_LENGTH = 1024;
 const FIELDS = 25;
 
 // SAVE LOCATION
-const SERVER_SAVE_DIR = './servers/'; // FIX ME - IMPLEMENT
+const SERVER_SAVE_DIR = './servers/';
 const SAVE_POSTFIX = '.guild';
 
 // BOT CONSTANTS
