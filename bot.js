@@ -382,7 +382,8 @@ function loadSettings() {
                             let keys = Object.keys(settings[serverId]);
                             let serverOwnerId = serverGuild.ownerID;
                             let serverOwner = serverOwnerId ? client.users.fetch(serverOwnerId) : null;
-                            let serverOwnerUsername = serverOwner ? serverOwner.user.username : null;
+                            console.log(serverOwner);
+                            let serverOwnerUsername = serverOwner ? serverOwner.username : null;
                             console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
