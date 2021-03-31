@@ -1,5 +1,5 @@
 # Galnet News Discord Bot
-DEV NOTE: So far most features are working as intended (except for the `api/galnet-all` not working for the moment, so I have to use the limited `api/galnet`), but I'm always open to input/merges to change or add new features/fix bugs!
+This bot primarily uses the official API provided by Frontier Developments, at: https://cms.elitedangerous.com/api/galnet
 
 ### If you want, you can now [invite the Galnet News Discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
 
