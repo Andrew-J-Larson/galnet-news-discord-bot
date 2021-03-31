@@ -551,7 +551,7 @@ function createArticlePost(msg, post) {
         let postGUID = postNodeData.field_galnet_guid[0].value;
         // need to remove langcode from end if matched
         if (postGUID.endsWith(postLangCode)) postGUID = postGUID.slice(0, -(postLangCode.length));
-        let postArchiveURL = GNN_ARCHIVE_URL_PREFIX + postGUID
+        let postArchiveURL = GNN_ARCHIVE_URL_PREFIX + postGUID;
         
         // start creating the embed
         const embed = new Discord.MessageEmbed()

@@ -79,7 +79,7 @@ And the data format of those show up as follows:
     "field_galnet_date": [ { "value": "01 JAN 3307" } ],
     "field_galnet_guid": [ { "value": "5fdce4b7b4ba847e4533d98een" } ],
     "field_galnet_image": [ { "value": "NewsImageTouristStation" } ],
-    "field_slug": [ { "value": "utopia-invites-superpowers-galactic-summit" } ],
+    "field_slug": [ { "value": "utopia-invites-superpowers-galactic-summit" } ]
 }
 ```
 
