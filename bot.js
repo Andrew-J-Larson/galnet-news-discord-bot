@@ -260,6 +260,16 @@ let settings = {};
 
 // FUNCTIONS
 
+function logConnectedServers() {
+    console.log('Connected to the following servers:');
+    client.guilds.cache.forEach(server => {
+        let ownerId = server.ownerID;
+        let owner = ownerId ? syncGetOwnerUsername(ownerId) : null;
+        let ownerUsername = serverOwner ? (owner.username + '#' + owner.discriminator) : null;
+        console.log(`\t"${server.name}" (${server.id})` + (ownerUsername ? (' [Owner: ' + ownerUsername + ']'));
+    });
+}
+
 // in years, months, days, hours, minutes, seconds
 /*function getHumanTime(ms) {
     // relies on Moment.js and the Moment-Precise-Range.js plug-in
@@ -972,6 +982,9 @@ function checkFeed() {
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    
+    // show connected servers
+    logConnectedServers();
 
     // load settings in first
     loadSettings();
