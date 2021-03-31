@@ -265,7 +265,7 @@ function logConnectedServers() {
     client.guilds.cache.forEach(server => {
         let ownerId = server.ownerID;
         let owner = ownerId ? syncGetOwnerUsername(ownerId) : null;
-        let ownerUsername = serverOwner ? (owner.username + '#' + owner.discriminator) : null;
+        let ownerUsername = owner ? (owner.username + '#' + owner.discriminator) : null;
         console.log(`\t"${server.name}" (${server.id})` + (ownerUsername ? (' [Owner: ' + ownerUsername + ']') : ''));
     });
 }
