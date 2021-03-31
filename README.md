@@ -31,3 +31,4 @@ Since this bot was made with [Node.js](https://nodejs.org), you'll need to make 
 - **[html-to-text](https://github.com/html-to-text/node-html-to-text)** - An advanced html to text converter.
 - **[moment](https://github.com/moment/moment)** - Parse, validate, manipulate, and display dates in javascript.
 - **[moment-precise-range-plugin](https://github.com/codebox/moment-precise-range)** - A moment.js plugin to display human-readable date/time ranges.
+- **[sync-rpc](https://github.com/ForbesLindesay/sync-rpc)** - ....Run asynchronous commands synchronously by putting them in a separate process.
