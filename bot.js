@@ -866,18 +866,27 @@ function setFeedRole(msg, roleArgs) {
     if (roleId) {
         let roleResult = true;
         
+        // dependant on permissions or choice, set or unset feed role
+        let botHasEveryonePermission = msg.guild.channels.cache.get(settings[serverId].feedChannel).permissionsFor(msg.guild.me).has(EVERYONE);
         if (roleId == settings[serverId].feedRole) {
+            // unsets role
             settings[serverId].feedRole = null;
             msgLocate(msg).send('The feed role mention is now turned off.');
-        } else if (!msg.guild.channels.cache.get(settings[serverId].feedChannel).permissionsFor(msg.guild.me).has(EVERYONE)
-          && (roleId == msg.guild.roles.cache.everyone.id || roleId == roleId == msg.guild.roles.cache.here.id)) {
-            msgLocate(msg).send("Sorry, but I don't have the permission to mention everyone/here in the currently set channel.");
-            roleResult = false;
         } else if (msg.guild.roles.cache.get(roleId).mentionable) {
+            // checks if the role itself is mentionable by everyone, then sets role
             settings[serverId].feedRole = roleId;
             msgLocate(msg).send('Automatic feed role mention changed to ' + msg.guild.roles.cache.get(roleId).toString() + '.', {'allowedMentions': { 'users' : []}});
+        } else if (botHasEveryonePermission) {
+            // checks if the bot has permissions to mention everyone, then sets role
+            settings[serverId].feedRole = roleId;
+            msgLocate(msg).send('Automatic feed role mention changed to ' + msg.guild.roles.cache.get(roleId).toString() + '.', {'allowedMentions': { 'users' : []}});
+        } else if (!botHasEveryonePermission && (roleId == msg.guild.roles.cache.everyone.id || roleId == msg.guild.roles.cache.here.id)) {
+            // throw error when bot can't mention @everyone or @here
+            msgLocate(msg).send("Sorry, but I don't have the permission to mention everyone/here in the currently set channel.");
+            roleResult = false;
         } else {
-            msgLocate(msg).send("Sorry, but that role is currently not mentionable.");
+            // if all else fails, then the bot can't mention the role for some reason
+            msgLocate(msg).send("Sorry, but that role is currently not mentionable. Please make sure that the bot has permissions to mention anyone, or that the role itself is mentionable by everyone.");
         }
 
         saveSettings(serverId);
