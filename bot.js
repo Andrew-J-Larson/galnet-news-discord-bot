@@ -384,7 +384,7 @@ function loadSettings() {
                             let serverOwner = null;
                             console.log(serverGuild);
                             if (serverOwnerId) {
-                                await client.users.fetch(serverOwnerId).then(function(guildOwner) {serverOwner = guildOwner});
+                                //await client.users.fetch(serverOwnerId).then(function(guildOwner) {serverOwner = guildOwner});
                             }
                             let serverOwnerUsername = serverOwner ? (serverOwner.username + '#' + serverOwner.discriminator) : null;
                             console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
