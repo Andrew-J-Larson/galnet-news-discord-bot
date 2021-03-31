@@ -366,7 +366,8 @@ function loadSettings() {
                     let serverId = file.replace(SAVE_POSTFIX, '');
 
                     // confirm serverId is a real server we are connected to (avoids invalid save files)
-                    if (client.guilds.cache.get(serverId)) {
+                    let serverGuild = client.guilds.cache.get(serverId);
+                    if (serverGuild) {
                         let data = fs.readFileSync(SERVER_SAVE_DIR + file, 'utf8');
 
                         // check to make sure that a specific server's settings hasn't already loaded in
@@ -379,7 +380,7 @@ function loadSettings() {
 
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
-                            console.log(serverId + ':');
+                            console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
                                 if (index === arr.length - 1 && line === "") return;
                                 console.log('\t' + index + ' ' + line);
