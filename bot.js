@@ -576,32 +576,55 @@ function createArticlePost(msg, post) {
         } else imageExists = false;
         if (imageExists) embed.attachFiles([imageToCheck]);
         else embed.attachFiles([GNN_ARTICLE_NO_IMAGE]);
-        
+
         // need to size differently for posts larger than 2048 characters
-        let archiveLink = '[Archived Post](' + postArchiveURL + ')';
+        let archiveLink = '**[Archived Post](' + postArchiveURL + ')**';
         let description = (firstSentence.length > 0) ? ('**' + firstSentence + '**') : '';
         // continue with creating rest of description
         description += (moreSentences.length > 0) ? moreSentences : '';
-        description += description ? ('\n\n**' + archiveLink + '**') : '';
+        description += description ? ('\n\n' + archiveLink + '\n') : '\n'; // an ending newline is needed sometimes to cut the description correctly
         const desc = [];
+        const endStringTests = ['\n\n', '\n'];
         if (description.length > DESCRIPTION_LENGTH) {
-            // need to make sure that the first chunk ends at a double newline
-            let newDescription = description.substring(0, DESCRIPTION_LENGTH + 4);
-            let firstChunkEnd = newDescription.lastIndexOf('\n\n');
-            // fix the newDescription to match requirements, and get the extended description
-            newDescription = description.substring(0, firstChunkEnd);
-            let extDescription = description.substring(firstChunkEnd + 4);
+            let firstChunkEnd = -1;
+            let firstEndStringTestIndex = 0;
+            while (firstChunkEnd < 0 && firstEndStringTestIndex < endStringTests.length) {
+                let firstEndString = endStringTests[firstEndStringTestIndex];
+                // need to make sure that the first chunk ends at a double newline, single newline, space, or at max length
+                let newDescription = description.substring(0, DESCRIPTION_LENGTH + firstEndString.length);
+                firstChunkEnd = newDescription.lastIndexOf(firstEndString);
 
-            desc.push(newDescription);
+                // can't go further if firstChunkEnd, wasn't found
+                if (firstChunkEnd > 0) {
+                    // fix the newDescription to match requirements, and get the extended description
+                    newDescription = description.substring(0, firstChunkEnd);
+                    let extDescription = description.substring(firstChunkEnd + firstEndString.length);
 
-            // need to dynamically create the new fields to overcome description/field string length restrictions
-            while (extDescription.length != 0) {
-                // similar chunking like in normal description
-                let newFieldValue = extDescription.substring(0, FIELD_VALUE_LENGTH + 4);
-                let iterationChunkEnd = newFieldValue.lastIndexOf('\n\n');
-                newFieldValue = extDescription.substring(0, iterationChunkEnd);
-                desc.push(newFieldValue);
-                extDescription = extDescription.substring(iterationChunkEnd, iterationChunkEnd + 4);
+                    desc.push(newDescription);
+
+                    // need to dynamically create the new fields to overcome description/field string length restrictions
+                    while (extDescription.length != 0) {
+                        let iterationChunkEnd = -1;
+                        let iterationEndStringTestIndex = 0;
+                        while (iterationChunkEnd < 0 && iterationEndStringTestIndex < endStringTests.length) {
+                            let iterationEndString = endStringTests[iterationEndStringTestIndex];
+                            // similar chunking like in normal description
+                            let newFieldValue = extDescription.substring(0, FIELD_VALUE_LENGTH + iterationEndString.length);
+                            iterationChunkEnd = newFieldValue.lastIndexOf(iterationEndString);
+
+                            // can't go further if iterationChunkEnd, wasn't found
+                            if (iterationChunkEnd > 0) {
+                                newFieldValue = extDescription.substring(0, iterationChunkEnd);
+                                desc.push(newFieldValue);
+                                extDescription = extDescription.substring(iterationChunkEnd + iterationEndString.length);
+                            }
+
+                            iterationEndStringTestIndex++;
+                        }
+                    }
+                }
+
+                firstEndStringTestIndex++;
             }
         } else desc.push(description);
 
