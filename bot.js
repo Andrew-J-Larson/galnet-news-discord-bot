@@ -683,7 +683,7 @@ function getGnnTopPost(msg) {
 
 // gets posts from galnet news; gameDate forces it to grab the articles from a specific date
 // if nothing is entered, it'll grab the newest post(s),
-// [for feed] but if a postNode is entered, it'll show new old to new posts starting from and skipping postNode
+// [for feed] but if a postNode is entered, it'll show old to new posts starting from and skipping postNode
 function getGnnPosts(msg, gameDateArgs, postNode) {
     // get date from argument(s)
     let gameDate = gameDateArgs ? (gameDateArgs.length == 3 ? gameDateArgs.join('-') : gameDateArgs[0]) : null;
