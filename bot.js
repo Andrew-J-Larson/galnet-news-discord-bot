@@ -701,7 +701,7 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
 
     return (async () => {
         let allNews = await fetchGnnArticles();
-        // as long as we don't hage a postNode, we need a date to check against
+        // as long as we don't have a postNode, we need a date to check against
         let checkDate = !postNode ? (gameDateMoment ? gameDateMoment.format('DD MMM YYYY').toUpperCase()
                                                     : allNews[0].date) : null;
         let post = null;
