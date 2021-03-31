@@ -7,7 +7,7 @@ const client = new Discord.Client();
 function asyncGetOwnerUsername() {
     return (ownerId) => {
         // Your async code here
-        return client.users.fetch(ownerId);
+        return client.users.fetch(ownerId).catch(() => null);
     }
 }
 
