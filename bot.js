@@ -261,7 +261,7 @@ let settings = {};
 // FUNCTIONS
 
 // in years, months, days, hours, minutes, seconds
-function getHumanTime(ms) {
+/*function getHumanTime(ms) {
     // relies on Moment.js and the Moment-Precise-Range.js plug-in
     let TIME_WORDS = ["year", "month", "day", "hour", "minute", "second"];
 
@@ -286,7 +286,7 @@ function getHumanTime(ms) {
     sentence = sentence.replace(/,(?=[^,]*$)/, ", and");
 
     return sentence;
-}
+}*/
 
 // returns the user from a mention
 function getUserFromMention(mention) {
@@ -776,7 +776,7 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
 }
 
 // gets and posts all articles from galnet news in order from oldest to newest
-function getAllGnnPosts(msg) {
+/*function getAllGnnPosts(msg) {
     (async () => {
         let allNews = await fetchGnnArticles();
 
@@ -791,7 +791,7 @@ function getAllGnnPosts(msg) {
             seconds++;
         }
     })(); 
-}
+}*/
 
 // sets the role to mention for the feed, role name/mention is required
 function setFeedRole(msg, roleArgs) {
