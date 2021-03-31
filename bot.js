@@ -381,8 +381,12 @@ function loadSettings() {
                             // loop through lines until correct setting is found or until end of file
                             let keys = Object.keys(settings[serverId]);
                             let serverOwnerId = serverGuild.ownerID;
-                            let serverOwner = serverOwnerId ? client.users.fetch(serverOwnerId) : null;
-                            console.log(serverOwner);
+                            let serverOwner = null;
+                            if (serverOwnerId) {
+                                (async () => {
+                                    await client.users.fetch(serverOwnerId).then(function(guildOwner) {console.log(guildOwner)});
+                                })();
+                            }
                             let serverOwnerUsername = serverOwner ? serverOwner.username : null;
                             console.log((serverGuild.name ? ('"' + serverGuild.name + '" (' + serverId + ')') : serverId) + (serverOwnerUsername ? (' [Owner: ' + serverOwnerUsername + ']') : '') + ':');
                             data.toString().split('\n').forEach(function(line, index, arr) {
