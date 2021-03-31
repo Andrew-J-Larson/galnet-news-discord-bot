@@ -3,6 +3,10 @@ This bot primarily uses the official API provided by Frontier Developments, at: 
 
 ### If you want, you can now [invite the Galnet News Discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
 
+Links:
+- Frontier Forums: https://forums.frontier.co.uk/threads/568615/
+- EDCodex Entry: http://edcodex.info/?m=tools&entry=503
+
 ## Appearance
 ![Example](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/example.png?raw=true) | ![Information](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/information.png?raw=true)
 -- | --
