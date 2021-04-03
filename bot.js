@@ -16,6 +16,8 @@ const client = new Discord.Client();
 
 // WEBSITES
 const AUTHOR_URL = 'https://thealiendrew.github.io';
+const PATREON_URL = 'https://www.patreon.com/aliendrew';
+const KOFI_URL = 'https://ko-fi.com/aliendrew';
 const PAYPAL_URL = 'https://paypal.me/AlienDrew';
 
 // STATUS TYPES
@@ -1097,7 +1099,7 @@ client.on('message', msg => {
             embed.addField(`__Bot Information__`,
               `Creator: **[${author}](${AUTHOR_URL})**\n` +
               `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
-              `Donate: **[PayPal](${PAYPAL_URL})**`);
+              `Donate: **[Patreon](${PATREON_URL})** | **[Ko-fi](${KOFI_URL})** | **[PayPal](${PAYPAL_URL})**`);
         
             msgLocate(msg).send(embed);
         }
