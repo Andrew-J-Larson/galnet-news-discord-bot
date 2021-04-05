@@ -1097,7 +1097,7 @@ client.on('message', msg => {
 
             // need this field added last
             embed.addField(`__Bot Information__`,
-              `Creator: **[${author}](${AUTHOR_URL}) ([Twitter](${TWITTER_URL}))**\n` +
+              `Creator: **[${author}](${AUTHOR_URL})** ([Twitter](${TWITTER_URL}))\n` +
               `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
               `Donate: **[Patreon](${PATREON_URL})** | **[Ko-fi](${KOFI_URL})**`);
         
