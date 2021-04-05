@@ -1084,7 +1084,7 @@ client.on('message', msg => {
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
               .setThumbnail(BOT_THUMBNAIL_IMAGE)
-              .setFooter(`Mention a mod/admin/owner if there's any problems, or [tweet the bot creator](${TWITTER_URL})`, BOT_FOOTER_IMAGE);
+              .setFooter(`Mention a mod/admin/owner if there's any problems, or tweet the bot creator`, BOT_FOOTER_IMAGE);
 
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
@@ -1097,7 +1097,7 @@ client.on('message', msg => {
 
             // need this field added last
             embed.addField(`__Bot Information__`,
-              `Creator: **[${author}](${AUTHOR_URL})**\n` +
+              `Creator: **[${author}](${AUTHOR_URL}) ([Twitter](${TWITTER_URL}))**\n` +
               `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
               `Donate: **[Patreon](${PATREON_URL})** | **[Ko-fi](${KOFI_URL})**`);
         
