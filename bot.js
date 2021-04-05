@@ -16,9 +16,9 @@ const client = new Discord.Client();
 
 // WEBSITES
 const AUTHOR_URL = 'https://thealiendrew.github.io';
+const TWITTER_URL = 'https://twitter.com/Alien_Drew';
 const PATREON_URL = 'https://www.patreon.com/aliendrew';
 const KOFI_URL = 'https://ko-fi.com/aliendrew';
-const PAYPAL_URL = 'https://paypal.me/AlienDrew';
 
 // STATUS TYPES
 const PLAY = 'PLAYING';
@@ -1084,7 +1084,7 @@ client.on('message', msg => {
                 `**top** - Works like newest, but only grabs the single most recent news post\n` +
                 `**feedinfo** - Shows if the feed is on, what channel it's set to, and if a role is set to be mentioned`)
               .setThumbnail(BOT_THUMBNAIL_IMAGE)
-              .setFooter("Mention a mod/admin/owner of the server if there are problems with this bot.", BOT_FOOTER_IMAGE);
+              .setFooter(`Mention a mod/admin/owner if there's any problems, or [tweet the bot creator](${TWITTER_URL})`, BOT_FOOTER_IMAGE);
 
             // need to conditionally show admin commands            
             if (msg.member.hasPermission(ADMIN)) {
@@ -1099,7 +1099,7 @@ client.on('message', msg => {
             embed.addField(`__Bot Information__`,
               `Creator: **[${author}](${AUTHOR_URL})**\n` +
               `Source Code: **[GitHub Repo](${GITHUB_REPO_URL})** (${license})\n` +
-              `Donate: **[Patreon](${PATREON_URL})** | **[Ko-fi](${KOFI_URL})** | **[PayPal](${PAYPAL_URL})**`);
+              `Donate: **[Patreon](${PATREON_URL})** | **[Ko-fi](${KOFI_URL})**`);
         
             msgLocate(msg).send(embed);
         }
