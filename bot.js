@@ -651,6 +651,7 @@ function createArticlePost(msg, post) {
         // send to all discord servers feed channels if not part of msg
         if (!msg) {
             // need to loop through all servers loaded in settings
+            let seconds = 0;
             let keys = Object.keys(settings);
             for (let i = 0; i < keys.length; i++) {
                 // check if server has active feed channel
@@ -659,23 +660,28 @@ function createArticlePost(msg, post) {
                     let server = client.guilds.cache.get(serverId);
                     let channel = server.channels.cache.get(settings[serverId].feedChannel);
                     let mentionRole = settings[serverId].feedRole ? server.roles.cache.get(settings[serverId].feedRole).toString() : null;
-                    // optionally included mention role
-                    if (mentionRole) {
-                        channel.send(mentionRole, embed).catch(err => {
-                            // mention role has been deleted likely
-                            console.error(`${serverId}: Has the role been deleted? Error: ` + err);
-                        });
-                    } else if (channel) {
-                        channel.send(embed).catch(err => {
-                            // channel has been deleted likely
-                            console.error(`${serverId}: Do we have access to the channel? Error: ` + err);
-                        });
-                    } else if (!channel && server) {
-                        console.error(`${serverId}: Has the channel been deleted?`);
-                    } else { // !server
-                        console.error(`${serverId}: Has the server been deleted?`);
-                    }
+                    // need to limit posting to avoid ratelimiting
+                    setTimeout(function() {
+                        // optionally included mention role
+                        if (mentionRole) {
+                            channel.send(mentionRole, embed).catch(err => {
+                                // mention role has been deleted likely
+                                console.error(`${serverId}: Has the role been deleted? Error: ` + err);
+                            });
+                        } else if (channel) {
+                            channel.send(embed).catch(err => {
+                                // channel has been deleted likely
+                                console.error(`${serverId}: Do we have access to the channel? Error: ` + err);
+                            });
+                        } else if (!channel && server) {
+                            console.error(`${serverId}: Has the channel been deleted?`);
+                        } else { // !server
+                            console.error(`${serverId}: Has the server been deleted?`);
+                        }
+                    }, ALL_POST_DELAY * (seconds + 1));
                 }
+
+                seconds++;
             }
         } else {
             msgLocate(msg).send(embed).catch(err => {
