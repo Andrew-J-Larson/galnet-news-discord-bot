@@ -183,9 +183,9 @@ const HTML_TO_TEXT = {
               : '';
             // we only want it to get new lines if it is embed
             if (aClass.includes('embed-media')) {
-                builder.openBlock({ leadingLineBreaks: formatOptions.leadingLineBreaks });
+                builder.openBlock({ leadingLineBreaks: formatOptions.lineBreaks });
                 walk(elem.children, builder);
-                builder.closeBlock({ trailingLineBreaks: formatOptions.trailingLineBreaks });
+                builder.closeBlock({ trailingLineBreaks: formatOptions.lineBreaks });
             } else {
                 walk(elem.children, builder);
             }
@@ -204,7 +204,7 @@ const HTML_TO_TEXT = {
     tags: { 'br': { format: 'customLineBreaks',
                     options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'div': { format: 'customContainer',
-                     options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                     options: { lineBreaks: 1 } }, // adds linebreak to top and bottom; change 2 to 1, for single line breaks
             'p': { options: { trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'a': { format: 'customLink' },
             'img': { format: 'customImage' },
@@ -226,22 +226,22 @@ const HTML_TO_TEXT = {
                    options: { tag: UNDERLINE } }, // tag gets replaced after markdown escapes
             'h1': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h2': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h3': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h4': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h5': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h6': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               trailingLineBreaks: 2 } } // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2 } } // change 2 to 1, for single line breaks
          }
 };
 
@@ -540,7 +540,7 @@ function createArticlePost(msg, post) {
     let serverId = msg ? (msg.guild ? msg.guild.id : null) : null;
     // get the right and formatted information for title and body
     let title = (post.title.replace(/\s/g,'').length > 0) ? htmlToText(post.title, {wordwrap: null}).replace(/\r/g,'').trim() : null;
-    let body = htmlToText(post.body, HTML_TO_TEXT).replace(/\r/g,'').trim();
+    let body = htmlToText(post.body.replace(/\r?\n|\r/g,''), HTML_TO_TEXT).trim();
     let sentences = body.split('\n');
     // sometimes the title is in the body
     if (!title) {
