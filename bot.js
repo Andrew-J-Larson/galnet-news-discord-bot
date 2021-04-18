@@ -264,12 +264,16 @@ let settings = {};
 
 function logConnectedServers() {
     console.log('Connected to the following servers:');
+    let connectedServers = 0;
     client.guilds.cache.forEach(server => {
         let ownerId = server.ownerID;
         let owner = ownerId ? syncGetOwnerUsername(ownerId) : null;
         let ownerUsername = owner ? (owner.username + '#' + owner.discriminator) : null;
         console.log(`\t"${server.name}" (${server.id})` + (ownerUsername ? (' [Owner: ' + ownerUsername + ']') : ''));
+        loadedServers++;
     });
+
+    return connectedServers;
 }
 
 // in years, months, days, hours, minutes, seconds
@@ -412,7 +416,7 @@ function loadSettings() {
                             });
 
                             if (settingsLoaded == keys.length) console.log('\tSettings loaded successfully');
-                            else if (settingsLoaded) console.log('\tSome settings, but not all, were loaded successfully');
+                            else if (settingsLoaded) console.log('\tPartial settings loaded successfully');
                             else console.log('\tNo settings found in file to load');
                         }
 
@@ -987,7 +991,7 @@ function checkFeed() {
                     console.error(err)
                 }
             }
-        } else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
+        } // else console.log(`No new post found, latest is still at: ${ED_NODE_URL_PREFIX}${checkPostNode}`);
 
         return newPostAvailable;
     })();
@@ -999,7 +1003,9 @@ client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
     
     // show connected servers
-    logConnectedServers();
+    let numOfServers = logConnectedServers();
+    if (numOfServers) console.log(`Connected to ${numOfServers} servers in total.`);
+    else console.log('Not connected to any servers at the moment.');
 
     // load settings in first
     loadSettings();
