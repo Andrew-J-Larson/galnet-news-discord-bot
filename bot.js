@@ -183,9 +183,9 @@ const HTML_TO_TEXT = {
               : '';
             // we only want it to get new lines if it is embed
             if (aClass.includes('embed-media')) {
-                builder.openBlock({ leadingLineBreaks: formatOptions.lineBreaks });
+                builder.openBlock({ leadingLineBreaks: (formatOptions.lineBreaks || 0) });
                 walk(elem.children, builder);
-                builder.closeBlock({ trailingLineBreaks: formatOptions.lineBreaks });
+                builder.closeBlock({ trailingLineBreaks: (formatOptions.lineBreaks || 0) });
             } else {
                 walk(elem.children, builder);
             }
@@ -194,11 +194,11 @@ const HTML_TO_TEXT = {
             let tag = formatOptions.tag;
             let tagStart = formatOptions.tagStart || (tag ? tag : '**__');
             let tagEnd = formatOptions.tagEnd || (tag ? tag : '__**');
-            builder.openBlock({ leadingLineBreaks: formatOptions.leadingLineBreaks || 0 });
+            builder.openBlock({ leadingLineBreaks: (formatOptions.leadingLineBreaks || 0) });
             builder.addInline(tagStart);
             walk(elem.children, builder);
             builder.addInline(tagEnd);
-            builder.closeBlock({ trailingLineBreaks: formatOptions.trailingLineBreaks || 0 });
+            builder.closeBlock({ trailingLineBreaks: (formatOptions.trailingLineBreaks || 0) });
         }
     },
     tags: { 'br': { format: 'customLineBreaks',
@@ -226,22 +226,22 @@ const HTML_TO_TEXT = {
                    options: { tag: UNDERLINE } }, // tag gets replaced after markdown escapes
             'h1': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h2': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h3': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h4': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h5': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } }, // change 2 to 1, for single line breaks
             'h6': { format: 'customHeading',
                     options: { tagStart: HEADING_START, tagEnd: HEADING_END, // tags gets replaced after markdown escapes
-                               leadingLineBreaks: 2 } } // change 2 to 1, for single line breaks
+                               leadingLineBreaks: 2, trailingLineBreaks: 2 } } // change 2 to 1, for single line breaks
          }
 };
 
