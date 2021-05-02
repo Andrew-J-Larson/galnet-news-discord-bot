@@ -1,7 +1,9 @@
 # Galnet News Discord Bot
 This bot primarily uses the official API provided by Frontier Developments, at: https://cms.elitedangerous.com/api/galnet
 
-### If you want, you can now [invite the Galnet News Discord bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your server.
+### As mentioned on [EliteWeek](https://www.youtube.com/watch?v=XFipg8c6hR0&t=2774s)!
+
+### [Invite this bot](https://discord.com/api/oauth2/authorize?client_id=609713919644401664&permissions=523328&scope=bot) to your Discord server!
 
 Links:
 - Frontier Forums: https://forums.frontier.co.uk/threads/568615/
