@@ -250,6 +250,9 @@ let serversFolderAccess = true; // prevents creation of settings files when it d
 // the inital settings object get's a deep copy of the DEFAULT_SETTINGS object
 let settings = {};
 
+// need a message queue in order to properly handle sending messages when the bot starts getting rate-limited
+let messageQueue = [];
+
 // FUNCTIONS
 
 function logConnectedServers() {
