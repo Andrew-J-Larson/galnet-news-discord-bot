@@ -71,7 +71,7 @@ const BOT_FOOTER_IMAGE = GNN_LOGO_WHITE_BOT_IMAGE;
 const REAL_TO_GAME_YEAR_DIFF = 1286;
 const GAME_START_YEAR = 3300;
 const FEED_INTERVAL_SPEED = 60000; // 1 minute in milliseconds
-const ALL_POST_DELAY = 1500; // 1.5 seconds in milliseconds
+const DEFAULT_POST_DELAY = 1500; // 1.5 seconds in milliseconds
 
 const ITALIC = '<i>';
 const BOLD = '<b>';
@@ -251,6 +251,7 @@ let serversFolderAccess = true; // prevents creation of settings files when it d
 let settings = {};
 
 // need a message queue in order to properly handle sending messages when the bot starts getting rate-limited
+let currentPostDelay = DEFAULT_POST_DELAY;
 let messageQueue = [];
 
 // FUNCTIONS
@@ -681,7 +682,7 @@ function createArticlePost(msg, post) {
                         } else { // !server
                             console.error(`${serverId}: Has the server been deleted?`);
                         }
-                    }, ALL_POST_DELAY * (seconds + 1));
+                    }, DEFAULT_POST_DELAY * (seconds + 1));
                 }
 
                 seconds++;
@@ -789,7 +790,7 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
                     if (currentPost.body.trim() != '') {
                         setTimeout(function() {
                             if (!createArticlePost(msg, currentPost)) noErrors = false;
-                        }, ALL_POST_DELAY * postIndex);
+                        }, DEFAULT_POST_DELAY * postIndex);
 
                         postIndex++;
                     }
@@ -802,7 +803,7 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
                     if (currentPost.body.trim() != '') {
                         setTimeout(function() {
                             if (!createArticlePost(msg, currentPost)) noErrors = false;
-                        }, ALL_POST_DELAY * postIndex);
+                        }, DEFAULT_POST_DELAY * postIndex);
 
                         postIndex++;
                     }
@@ -823,12 +824,12 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
         let allNews = await fetchGnnArticles();
 
         const TOTAL_ARTICLES = allNews.length;
-        let estimatedTime = getHumanTime(ALL_POST_DELAY * TOTAL_ARTICLES);
+        let estimatedTime = getHumanTime(DEFAULT_POST_DELAY * TOTAL_ARTICLES);
         msgLocate(msg).send(`ATTENTION: Sending ${TOTAL_ARTICLES} news posts will take about ${estimatedTime} to complete`);
 
         let seconds = 0;
         for (let i = TOTAL_ARTICLES - 1; i >= 0; i--) {
-            setTimeout(function() {createArticlePost(msg, allNews[i])}, ALL_POST_DELAY * (seconds + 1));
+            setTimeout(function() {createArticlePost(msg, allNews[i])}, DEFAULT_POST_DELAY * (seconds + 1));
 
             seconds++;
         }
