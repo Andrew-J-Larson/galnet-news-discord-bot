@@ -271,7 +271,7 @@ function logConnectedServers() {
 }
 
 // in years, months, days, hours, minutes, seconds
-/*function getHumanTime(ms) {
+function getHumanTime(ms) {
     // relies on Moment.js and the Moment-Precise-Range.js plug-in
     let TIME_WORDS = ["year", "month", "day", "hour", "minute", "second"];
 
@@ -296,7 +296,7 @@ function logConnectedServers() {
     sentence = sentence.replace(/,(?=[^,]*$)/, ", and");
 
     return sentence;
-}*/
+}
 
 // returns the user from a mention
 function getUserFromMention(mention) {
@@ -735,7 +735,8 @@ function getGnnPosts(msg, gameDateArgs, postNode) {
         DD_MMM_YYYY = moment(gameDate, 'DD-MMM-YYYY');
     let gameDateMoment = (DD_MM_YYYY.isValid() ? DD_MM_YYYY : (DD_MMM_YYYY.isValid() ? DD_MMM_YYYY : null));
     if (gameDate && !gameDateMoment) {
-        msgLocate(msg).send('Invalid date entered, please put date in the correct format.');
+        // TODO: NEED TO IMPLEMENT CHECK OF STRING IN THE CASE THAT WE ARE TRYING TO GRAB A SPECIFIC ARTICLE BY UID/GUID
+        msgLocate(msg).send('Invalid date entered, please put date in the correct format. Entering article UIDs/GUIDs are not currently supported at this time.');
         return false;
     } else if (gameDateMoment && gameDateMoment.year() < GAME_START_YEAR) {
         // fix the year to game years if we are using real years
@@ -1145,10 +1146,10 @@ client.on('message', msg => {
             // <===== BOT COMMANDS HERE =====> //
 
             // DATE
-            /*else if (command === 'date') {
+            else if (command === 'date') {
                 console.log(`${serverId}: Executed date command`);
                 getGnnPosts(msg, args);
-            }*/
+            }
 
             // NEWEST / LATEST
             else if (command === 'newest' || command == 'latest') {
