@@ -15,7 +15,7 @@ const client = new Discord.Client();
 // CONSTANTS
 
 // WEBSITES
-const AUTHOR_URL = 'https://thealiendrew.github.io';
+const AUTHOR_URL = 'https://andrew-j-larson.github.io';
 const TWITTER_URL = 'https://twitter.com/Alien_Drew';
 const PATREON_URL = 'https://www.patreon.com/Andrew_J_Larson';
 const KOFI_URL = 'https://ko-fi.com/Andrew_J_Larson';
