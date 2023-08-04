@@ -12,14 +12,14 @@ Links:
 For any status updates, I may post something at one of the previous links, or at my Twitter: [![Twitter](https://i.ibb.co/GRCdkR1/twitter.png)](https://twitter.com/Alien_Drew)
 
 ## Appearance
-![Example](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/example.png?raw=true) | ![Information](https://github.com/TheAlienDrew/galnet-news-discord-bot/blob/main/images/information.png?raw=true)
+![Example](https://github.com/Andrew-J-Larson/galnet-news-discord-bot/blob/main/images/example.png?raw=true) | ![Information](https://github.com/Andrew-J-Larson/galnet-news-discord-bot/blob/main/images/information.png?raw=true)
 -- | --
 
 ## Want to modify and run your own instance?
 Since this bot was made with [Node.js](https://nodejs.org), you'll need to make sure to install the latest LTS version as that's what I've been using with this project.
 
 ### Initial Setup
-1. If you don't already have git installed, please do so, and then run `git clone https://github.com/TheAlienDrew/galnet-news-discord-bot`.
+1. If you don't already have git installed, please do so, and then run `git clone https://github.com/Andrew-J-Larson/galnet-news-discord-bot`.
 2. Then, before trying to run the bot, you'll need to go into the folder and update the packages by running `npm update`.
 3. Make sure you already have filled out a [new developer application with discord](https://discord.com/developers/applications) so you can retrieve the bot token, to put into config in the next step.
 4. You'll need to go to the directory above the git clone (e.g. `../galnet-news-discord-bot`), and create a file named `galnet-news-discord-bot.config` containing the following, while replacing `[YOUR BOT TOKEN HERE]` with your application's bot token:
