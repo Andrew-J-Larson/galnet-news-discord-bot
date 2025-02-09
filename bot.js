@@ -15,10 +15,10 @@ const client = new Discord.Client();
 // CONSTANTS
 
 // WEBSITES
-const AUTHOR_URL = 'https://andrew-larson.dev';
-const TWITTER_URL = 'https://twitter.com/Alien_Drew';
-const PATREON_URL = 'https://www.patreon.com/Andrew_J_Larson';
-const KOFI_URL = 'https://ko-fi.com/Andrew_J_Larson';
+const AUTHOR_URL = 'https://drewj.la';
+const TWITTER_URL = '#';
+const PATREON_URL = '#';
+const KOFI_URL = '#';
 
 // STATUS TYPES
 const PLAY = 'PLAYING';
