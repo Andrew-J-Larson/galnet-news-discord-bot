@@ -40,6 +40,3 @@ Since this bot was made with [Node.js](https://nodejs.org), you'll need to make 
 - **[moment](https://github.com/moment/moment)** - Parse, validate, manipulate, and display dates in javascript.
 - **[moment-precise-range-plugin](https://github.com/codebox/moment-precise-range)** - A moment.js plugin to display human-readable date/time ranges.
 - **[sync-rpc](https://github.com/ForbesLindesay/sync-rpc)** - Run asynchronous commands synchronously by putting them in a separate process.
-
-## Buy me a cup of coffee?
-[![patreon](https://i.ibb.co/WnqRJ92/patreon.png)](https://www.patreon.com/bePatron?u=8414636)  [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E845O3L)
